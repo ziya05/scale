@@ -214,13 +214,15 @@ img {
 	right: 50px;
 	bottom: 50px;
 	cursor: pointer;
+	background: url('../images/mute.png');
+	background-size: 100% 100%;
+}
+
+.dv-sound.playing {
+	background: url('../images/sound.png');
+	background-size: 100% 100%;
 }
 
 .dv-sound:hover {
 	border: solid 1px #ccc;
-}
-
-.dv-sound-img {
-	width: 50px;
-	height: 50px;
 }
