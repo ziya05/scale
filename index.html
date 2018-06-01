@@ -1,0 +1,107 @@
+<html>
+	<head>
+		<title>心里学测评系统</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="assets/styles/index.css" />
+		<link rel="stylesheet" href="assets/styles/scale.css" />
+		<link rel="stylesheet" href="assets/styles/progress.css" />
+		<script src="assets/scripts/jquery-3.3.1.min.js"></script>
+		<script src="assets/scripts/scale.js"></script>
+		<script src="assets/scripts/progress.js"></script>
+		<script src="assets/scripts/index.js"></script>
+	</head>
+	<body>
+		<div class="ui-root">
+			<div class="ui-background">
+			</div>
+			<audio id="bg-music" src="assets/sounds/WebVR_music_04.ogg" type="audio/ogg" 
+			autoplay="autoplay" 
+			loop="loop" preload="auto"></audio>
+			<div class="ui-title">
+				<div class="ui-subtitle">心理学测评系统</div>
+			</div>
+			<div class="menu-root">
+				<div class="menu-slides">
+					<div class="menu-slide-entry menu-slide">
+						<div class="menu-slide-entry-comic">
+							<div class="menu-slide-entry-bots">
+								<img src="assets/images/entry-bot-1.png" class="menu-slide-entry-bot" />
+								<img src="assets/images/entry-bot-2.png" class="menu-slide-entry-bot" style="display: none;" />
+								<img src="assets/images/entry-bot-3.png" class="menu-slide-entry-bot" style="display: none;"/>
+								<img src="assets/images/entry-bot-4.png" class="menu-slide-entry-bot" style="display: none;"/>
+								<img src="assets/images/entry-bot-5.png" class="menu-slide-entry-bot" style="display: none;"/>
+							</div>
+							<img src="assets/images/player-diagram.png" class="menu-slide-entry-img" />
+						</div>
+						<div id="btnStart" class="ui-button ui-red">
+							<p>嘿，做个测验吧</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="ui-bots">
+				<div class="ui-bots-container">
+					<img src="assets/images/background-bot-blue-4.png" class="ui-bot ui-bot-1" />
+					<img src="assets/images/background-bot-green-5.png" class="ui-bot ui-bot-2" />
+					<img src="assets/images/background-bot-red-1.png" class="ui-bot ui-bot-3" />
+					<img src="assets/images/background-bot-blue-6.png" class="ui-bot ui-bot-4" />
+				</div>
+			</div>
+		</div>
+		<div class="scale-mask" style="display: none;">
+		</div>
+		<div class="scale-panel" style="display: none;">
+			<div class="scale-panel-lst" style="display: none;">
+				<p class="scale-panel-title">
+					请选择相关量表：
+				</p>
+				<div class="scale-lst">
+					<div class="scale-lst-container"></div>
+				</div>
+				<div class="scale-panel-lst-close">X</div>
+			</div>
+			<div class="scale-panel-scale" style="display: none;">
+				<p class="scale-panel-title">
+				</p>
+				<p class="scale-panel-scale-description">
+				</p>
+				<div class="scale-panel-scale-tool">
+					<input type="button" value="重新选择" class="scale-btn scale-btn-reselect" />
+					<input type="button" value="运行" class="scale-btn scale-btn-load"/>
+				</div>
+			</div>
+			<div class="scale-panel-personal" style="display: none">
+				<p class="scale-panel-title">
+					请填写个人信息：
+				</p>
+				<div class="scale-personal-info">
+					<div class="scale-personal-base">
+						<div class="scale-personal-item">
+							<span class="scale-personal-item-title">姓名：</span><input id="scale-personal-name" type="text" class="scale-personal-item-input" />
+						</div>
+						<div class="scale-personal-item">
+							<span class="scale-personal-item-title">性别：</span><input id="scale-personal-gender" type="text" class="scale-personal-item-input" />
+						</div>
+					</div>
+					<div class="scale-personal-extra">
+					</div>
+				</div>
+				<div class="scale-panel-scale-tool">
+					<input type="button" value="确定" class="scale-btn scale-btn-go disable"/>
+				</div>
+			</div>
+			<div class="scale-panel-run" style="display: none">
+			</div>
+			<div class="scale-panel-result" style="display: none">
+				<div class="scale-panel-result-info">
+				</div>
+				<div class="scale-panel-scale-tool">
+					<input type="button" value="确定" class="scale-btn scale-btn-close"/>
+				</div>
+			</div>
+		</div>
+		<div class="dv-sound playing">
+			<img class="dv-sound-img" src="assets/images/sound.png" />
+		</div>
+	</body>
+</html>
