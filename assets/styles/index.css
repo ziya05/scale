@@ -4,16 +4,12 @@
 	box-sizing: border-box;
 }
 
-img {
-	border-style: none;
-}
-
-.ui-root {
+html, body {
+	width: 100%;
 	height: 100%;
-	overflow: hidden;
 }
 
-.ui-root {
+.zy-ui-root {
 	height: 100%;
 	min-height: 100%;
 	overflow-x: hidden;
@@ -22,207 +18,117 @@ img {
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	pointer-events: none;
+	overflow: hidden;
 }
 
-.ui-root > * {
+.zy-ui-root > * {
 	flex-shrink: 0;
-	z-index: 0;
+	/*z-index: -100;*/
 }
 
-.ui-background {
+.zy-ui-full {
 	position: absolute;
 	top: 0;
 	bottom: 0;
 	left: 0;
 	right: 0;
-	background: linear-gradient(to bottom,#3b9bf5 0%,#81c4f7 100%);
+}
+
+.zy-ui-background {
+	/*background: linear-gradient(to bottom,#3b9bf5 0%,#81c4f7 100%);*/
+	background: linear-gradient(to bottom,#04b 0%,#81c4f7 100%);
+	z-index: -100;
+}
+
+.zy-ui-foreground {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
+	width: 1200px;
+	height: 600px;
+	text-align: center;
+}
+
+.zy-ui-foreground-main {
+	overflow: hidden;
+	bottom: -50px;
+}
+
+@keyframes earthMove{
+	0% { transform: rotate(0deg);  }
+	25% { transform: rotate(60deg);  }
+	50% { transform: rotate(180deg); }
+	75% { transform: rotate(270deg); }
+	100% { transform: rotate(360deg);  }
+}
+
+.zy-ui-foreground-earth {
+	position: absolute;
+	left: calc(50% - 230px);
+	bottom: 0;
+	width: 1000px;
+	height: 600px;
+	background: url('../images/earth.png') no-repeat center 0;
+	background-size: auto 100%;
+	z-index: 100;
+
+	animation: earthMove 20s infinite linear;
+	-webkit-animation: earthMove 20s infinite linear;
+
+	animation-delay: 0;
+	-webkit-animation-delay: 0;
+}
+
+@keyframes satelliteMove {
+	0% { transform: scale(0.5) rotate(0deg);  }
+	25% { transform: scale(1) rotate(30deg);  }
+	50% { transform: scale(1.5) rotate(60deg); }
+	75% { transform: scale(1) rotate(30deg); }
+	100% { transform: scale(0.5) rotate(0deg);  }
+}
+
+.zy-ui-foreground-satellite {
+	width: 200px;
+	height: 150px;
+	background: url('../images/satellite.png') no-repeat;
+	background-size: 100% 100%;
+
+	transition: transform 2s;
+	-moz-transition: transform 2s; /* Firefox 4 */
+	-webkit-transition: transform 2s; /* Safari 和 Chrome */
+	-o-transition: transform 2s; /* Op */
+
+	animation: satelliteMove 10s infinite linear;
+	-webkit-animation: satelliteMove 10s infinite linear;
+}
+
+.zy-ui-foreground-satellite:hover {
+	cursor: pointer;
+}
+
+.ui-text {
+	position: absolute;
+	left: 20%;
+	bottom: 30%;
 }
 
 .ui-title {
-	width: 380px;
-	text-align: center;
+	font-size: 25px;
+	line-height: 5;
 }
 
-.ui-subtitle {
-	color: #fff;
-	font-family: "Channel", "sans-serif","Microsoft YaHei";
-	letter-spacing: 1px;
-	text-align: center;
-	white-space: pre;
-	font-size: 1.25rem;
-	margin-top: 5px;
-	margin-bottom: 10px;
-	font-weight: 500;
-}
-
-.ui-bots {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	overflow: hidden;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.ui-bots-container {
-	position: relative;
-	flex: none;
-	width: 100%;
-	height: 100%;
-	min-width: 1000px;
-	max-width: 1200px;
-	min-height: 700px;
-	max-height: 1000px;
-}
-
-.ui-bot {
-	position: absolute;
-}
-
-.ui-bot-1 {
-	top: 26%;
-	left: 8%;
-	width: 200px;
-	height: 200px;
-	margin-top: -100px;
-	margin-left: -100px;
-}
-
-.ui-bot-2 {
-	top: 70%;
-	left: 10%;
-	width: 180px;
-	height: 180px;
-	margin-top: -90px;
-	margin-left: -90px;
-}
-
-.ui-bot-3 {
-	top: 22%;
-	left: 88%;
-	width: 180px;
-	height: 180px;
-	margin-top: -90px;
-	margin-left: -90px;
-}
-
-.ui-bot-4 {
-	top: 74%;
-	left: 88%;
-	width: 190px;
-	height: 190px;
-	margin-top: -95px;
-	margin-left: -95px;
-}
-
-.menu-root {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
-}
-
-.menu-slides {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 90vw;
-	min-width: 300px;
-	max-width: 480px;
-}
-
-.menu-slides .menu-slide {
-	width: 100%;
-}
-
-.menu-slide-entry {
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	flex-direction: column;
-}
-
-.menu-slide-entry-comic {
-	position: relative;
-}
-
-.menu-slide-entry-bots {
-	position: absolute;
-	top: -12px;
-	left: 369px;
-	width: 135px;
-	height: 135px;
-	clip: rect(13px, 135px, 123px, 0)
-}
-
-.menu-slide-entry-bot {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-}
-
-.menu-slide-entry-img {
-	width: 520px;
-}
-
-.ui-button {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: row;
-	font-size: 1rem;
-	font-weight: bold;
-	text-align: center;
-	white-space: pre;
-	cursor: pointer;
-	user-select: none;
-	pointer-events: all !important;
-	border: none;
-	border-radius: 5px;
-
+.ui-btn {
+	background-color: #f00;
 	padding: 20px 30px;
-	margin-top: 10px;
-	margin-bottom: 15px;
-	transition: all .1s ease-out;
-}
-
-.ui-button.ui-red {
+	border-radius: 15px;
 	color: #fff;
-	background-color: #ed475c;
-	box-shadow: 0 5px 0 0 #ca3d3d;
-}
-
-.ui-button.ui-red:hover {
-	box-shadow: 0 8px 0 0 #ca3d3d;
-	transition: all .1s ease-out;
-}
-
-.ui-button:hover:not(.disabled){
-	transform: translateY(-3px);
-}
-
-.dv-sound {
-	position: absolute;
-	width: 50px;
-	height: 50px;
-	right: 50px;
-	bottom: 50px;
+	font-weight: 600;
 	cursor: pointer;
-	background: url('../images/mute.png');
-	background-size: 100% 100%;
+	border: 0;
 }
 
-.dv-sound.playing {
-	background: url('../images/sound.png');
-	background-size: 100% 100%;
-}
-
-.dv-sound:hover {
-	border: solid 1px #ccc;
+.ui-btn:hover {
+	background-color: #c00;
+	transform: translateY(-3px);
 }

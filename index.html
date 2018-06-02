@@ -11,40 +11,19 @@
 		<script src="assets/scripts/index.js"></script>
 	</head>
 	<body>
-		<div class="ui-root">
-			<div class="ui-background">
+		<div class="zy-ui-root">
+			<div class="zy-ui-full zy-ui-background"></div>
+			<div class="zy-ui-full zy-ui-background-img"></div>
+			<div class="zy-ui-foreground">
+				<div class="zy-ui-foreground-main zy-ui-full"><div class="zy-ui-foreground-earth"></div></div>
+				<div class="zy-ui-foreground-spot-1 zy-ui-full"><div class="zy-ui-foreground-satellite"></div></div>
 			</div>
-			<audio id="bg-music" src="assets/sounds/WebVR_music_04.ogg" type="audio/ogg" 
-			autoplay="autoplay" 
-			loop="loop" preload="auto"></audio>
-			<div class="ui-title">
-				<div class="ui-subtitle">心理学测评系统</div>
-			</div>
-			<div class="menu-root">
-				<div class="menu-slides">
-					<div class="menu-slide-entry menu-slide">
-						<div class="menu-slide-entry-comic">
-							<div class="menu-slide-entry-bots">
-								<img src="assets/images/entry-bot-1.png" class="menu-slide-entry-bot" />
-								<img src="assets/images/entry-bot-2.png" class="menu-slide-entry-bot" style="display: none;" />
-								<img src="assets/images/entry-bot-3.png" class="menu-slide-entry-bot" style="display: none;"/>
-								<img src="assets/images/entry-bot-4.png" class="menu-slide-entry-bot" style="display: none;"/>
-								<img src="assets/images/entry-bot-5.png" class="menu-slide-entry-bot" style="display: none;"/>
-							</div>
-							<img src="assets/images/player-diagram.png" class="menu-slide-entry-img" />
-						</div>
-						<div id="btnStart" class="ui-button ui-red">
-							<p>嘿，做个测验吧</p>
-						</div>
-					</div>
+			<div class="ui-text">
+				<div class="ui-title">
+					心理测评系统
 				</div>
-			</div>
-			<div class="ui-bots">
-				<div class="ui-bots-container">
-					<img src="assets/images/background-bot-blue-4.png" class="ui-bot ui-bot-1" />
-					<img src="assets/images/background-bot-green-5.png" class="ui-bot ui-bot-2" />
-					<img src="assets/images/background-bot-red-1.png" class="ui-bot ui-bot-3" />
-					<img src="assets/images/background-bot-blue-6.png" class="ui-bot ui-bot-4" />
+				<div id="btnStart" class="ui-btn">
+					嘿，做个实验吧！
 				</div>
 			</div>
 		</div>
