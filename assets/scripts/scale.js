@@ -1,4 +1,4 @@
-function Scale(apiAddress, showProgress, hideProgress) {
+function Scale(apiAddress, showProgress, hideProgress, callback) {
 
 	this.mask = null;
 	this.panel = null;
@@ -262,7 +262,7 @@ function Scale(apiAddress, showProgress, hideProgress) {
 			info: info
 		};
 
-		_.showProgress("正在计算结果，请稍等...")
+		_.showProgress("正在回传数据，请稍等...")
 
 		$.ajax({
 			type: "post",
@@ -274,25 +274,26 @@ function Scale(apiAddress, showProgress, hideProgress) {
 			success: function(data) {
 				_.hideProgress();
 			
-				_.scalePanelResultInfo.empty();
-				var items = data.items;
-				$.each(items, function(i, item) {
-					var factorContainer = $("<div></div")
-						.addClass("scale-result-factor")
-						.appendTo(_.scalePanelResultInfo);
+				// _.scalePanelResultInfo.empty();
+				// var items = data.items;
+				// $.each(items, function(i, item) {
+				// 	var factorContainer = $("<div></div")
+				// 		.addClass("scale-result-factor")
+				// 		.appendTo(_.scalePanelResultInfo);
 
-					$("<p></p>")
-						.addClass("scale-result-factor-name")
-						.text(item.name)
-						.appendTo(factorContainer);
+				// 	$("<p></p>")
+				// 		.addClass("scale-result-factor-name")
+				// 		.text(item.name)
+				// 		.appendTo(factorContainer);
 
-					$("<p></p>")
-						.addClass("scale-result-factor-description")
-						.text(item.description)
-						.appendTo(factorContainer);
-				});
+				// 	$("<p></p>")
+				// 		.addClass("scale-result-factor-description")
+				// 		.text(item.description)
+				// 		.appendTo(factorContainer);
+				// });
 
-				_.scalePanelResult.show(300);
+				// _.scalePanelResult.show(300);
+				callback("数据回传成功！");
 			}
 		});
 	};

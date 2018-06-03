@@ -1,0 +1,78 @@
+
+.zy-alert-mask {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	background-color: #000;
+ 	z-index: 1000;
+ 	display: none;
+}
+
+.zy-alert-panel {
+	position: absolute;
+	width: 600px;
+	height: 400px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	border: 1px solid #ccc;
+	border-radius: 20px;
+	z-index: 1001;
+	display: none;
+}
+
+.zy-alert-container {
+	position: relative;
+	width: 100%;
+	height: 70%;
+	overflow: hidden;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.zy-alert-content {
+	position: absolute;
+	width: 100%;
+	padding: 20px 50px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	color: #fff;
+	font-size: 24px;
+	line-height: 2;
+}
+
+.zy-alert-tools {
+	position: absolute;
+	width: 100%;
+	height: 30%;
+	left: 0;
+	bottom: 0;
+}
+
+.zy-alert-btncontainer {
+	height: 80%;
+	text-align: center;
+	margin-top: 20px;
+}
+
+.zy-alert-button {
+	display: inline-block;
+	margin: 0 20px;
+	width: 120px;
+	padding: 10px 10px;
+	border: 1px solid #ccc;
+	color: #fff;
+	cursor: pointer;
+}
+
+.zy-alert-button.hidden {
+	display: none;
+}
+
+.zy-alert-button:hover {
+	background-color: #c00;
+	border: 1px solid #c00;
+}
