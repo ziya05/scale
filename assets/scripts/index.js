@@ -7,8 +7,14 @@ $(document).ready(function(){
 	scale = new Scale(apiAddress, 
 		progress.showProgress, 
 		progress.hideProgress,
-		function(text) {
-			zyAlert.show(text);
+		function(text, noShowAlert) {
+			if (noShowAlert) {
+				scale.close(toggleMove);
+			} else {
+				zyAlert.show(text, function() {
+					scale.close(toggleMove);
+				});
+			}
 		});
 
 	setEvents();
@@ -16,10 +22,16 @@ $(document).ready(function(){
 
 function setEvents() {
 	$("#btnStart").click(function(e) {
-		scale.showScaleList();
+		scale.showScaleList(toggleMove);
 		e.stopPropagation();
 	});
 };
 
 
+function toggleMove() {
+	$(".zy-ui-foreground-earth")
+		.toggleClass("move");
 
+	$(".zy-ui-foreground-satellite")
+		.toggleClass("move");
+};

@@ -1,4 +1,4 @@
-function Scale(apiAddress, showProgress, hideProgress, callback) {
+function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 	this.mask = null;
 	this.panel = null;
@@ -35,10 +35,15 @@ function Scale(apiAddress, showProgress, hideProgress, callback) {
 
 	var _ = this
 
-	this.showScaleList = function() {
+	this.showScaleList = function(callback) {
 
 		_.mask.show(500, function(){
 			 _.panel.slideDown(500, function(){
+
+				if (typeof callback != "undefined"
+					&& callback != null) {
+					callback();
+				}
 
 				_.updateScaleList(function(s, e){
 					_.scalePanelScaleTitle.text(s.name);
@@ -274,27 +279,19 @@ function Scale(apiAddress, showProgress, hideProgress, callback) {
 			success: function(data) {
 				_.hideProgress();
 			
-				// _.scalePanelResultInfo.empty();
-				// var items = data.items;
-				// $.each(items, function(i, item) {
-				// 	var factorContainer = $("<div></div")
-				// 		.addClass("scale-result-factor")
-				// 		.appendTo(_.scalePanelResultInfo);
-
-				// 	$("<p></p>")
-				// 		.addClass("scale-result-factor-name")
-				// 		.text(item.name)
-				// 		.appendTo(factorContainer);
-
-				// 	$("<p></p>")
-				// 		.addClass("scale-result-factor-description")
-				// 		.text(item.description)
-				// 		.appendTo(factorContainer);
-				// });
-
-				// _.scalePanelResult.show(300);
-				callback("数据回传成功！");
+				endCallback("数据回传成功！");
 			}
+		});
+	};
+
+	this.close = function(callback) {
+		scale.panel.slideUp(500, function(){
+			scale.mask.hide(500, function() {
+				if (typeof callback != "undefined" 
+					&& callback != null) {
+					callback();
+				}
+			});
 		});
 	};
 
@@ -365,11 +362,7 @@ function Scale(apiAddress, showProgress, hideProgress, callback) {
 		});
 
 		scale.scaleLstPanelClose.click(function(){
-			scale.hideProgress();
-
-			scale.panel.slideUp(500, function(){
-				scale.mask.hide(500);
-			})
+			endCallback(null, true);
 		});
 
 		scale.scalePanelResultClose.click(function(){

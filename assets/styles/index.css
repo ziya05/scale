@@ -72,7 +72,9 @@ html, body {
 	background: url('../images/earth.png') no-repeat center 0;
 	background-size: auto 100%;
 	z-index: 100;
+}
 
+.zy-ui-foreground-earth.move {
 	animation: earthMove 20s infinite linear;
 	-webkit-animation: earthMove 20s infinite linear;
 
@@ -93,12 +95,14 @@ html, body {
 	height: 150px;
 	background: url('../images/satellite.png') no-repeat;
 	background-size: 100% 100%;
+}
 
-	transition: transform 2s;
-	-moz-transition: transform 2s; /* Firefox 4 */
-	-webkit-transition: transform 2s; /* Safari 和 Chrome */
-	-o-transition: transform 2s; /* Op */
-
+.zy-ui-foreground-satellite.move {
+/*	transition: transform 2s;
+	-moz-transition: transform 2s;  
+	-webkit-transition: transform 2s;  
+	-o-transition: transform 2s; */
+	
 	animation: satelliteMove 10s infinite linear;
 	-webkit-animation: satelliteMove 10s infinite linear;
 }
