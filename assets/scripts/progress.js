@@ -30,7 +30,7 @@ function Progress(container) {
 				.addClass("ziya-progress-fg")
 				.appendTo(_.bg);
 
-			this.isInit = true;
+			_.isInit = true;
 		}
 
 		_.content.text("");
@@ -45,9 +45,11 @@ function Progress(container) {
 	};
 
 	this.hideProgress = function(){
-		clearInterval(_.t);
-		_.fg.css("left", "0px");
-		_.panel.hide();
+		if (_.isInit == true) {
+			clearInterval(_.t);
+			_.fg.css("left", "0px");
+			_.panel.hide();
+		}
 	};
 
 	function go() {

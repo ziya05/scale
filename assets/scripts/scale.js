@@ -30,13 +30,14 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	this.getScaleById = getApi("/ScaleService/scale/");
 	this.getResult = getApi("/ScaleService/scale/result/");
 
+	this.endCallback = endCallback;
 
 	init(this);
 
 	var _ = this
 
 	this.showScaleList = function(callback) {
-
+		preparePage();
 		_.mask.show(500, function(){
 			 _.panel.slideDown(500, function(){
 
@@ -93,7 +94,10 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 				_.scaleLstPanel.slideDown(300);
 			}, 
-		"json");
+		"json")
+		.fail(function(xhr, status, error){
+			loadError("数据加载失败！", xhr, status, error);
+		});
 	};
 
 	this.loadPersonalInfo = function(id) {
@@ -133,6 +137,9 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 			_.hideProgress();
 			scale.scalePanelPersonal.slideDown(500);
+		}, "json")
+		.fail(function(xhr, status, error){
+			loadError("数据加载失败！", xhr, status, error);
 		});
 	};
 
@@ -169,7 +176,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 					var radio = $("<input type='radio' />")
 					.attr("name", item.id)
 					.addClass("scale-item-option")
-					.val(option.id)
+					.val(option.optionId)
 					.attr("data-scale-next", option.next)
 					.data("item-score", option.score)
 					.appendTo(radioBox);
@@ -199,7 +206,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 					$("<span></span>")
 						.addClass("scale-item-option-text")
-						.text(option.content)
+						.text(option.optionId + ". " + option.content)
 						.appendTo(radioBox);
 				});
 			});
@@ -208,7 +215,10 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			 _.scalePanelRun.find(".scale-item").filter("[data-item-id=1]")
 			 .show(300);
 
-		}, "json");
+		}, "json")
+		.fail(function(xhr, status, error){
+			loadError("数据加载失败！", xhr, status, error);
+		});
 
 	};
 
@@ -220,7 +230,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		for(var i = 1; i <= totalItemCount; i++) {
 			
 			var val = -1;
-			var score = 0;
+			var score = -1;
 
 			var option = dvItems.filter("[data-item-id=" + i + "]")
 				.find(".scale-item-option:checked");
@@ -272,7 +282,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		$.ajax({
 			type: "post",
 			url: _.getResult + id,
-			async: true,
+			// async: true,
 			data: JSON.stringify(historyData),
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
@@ -280,7 +290,11 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 				_.hideProgress();
 			
 				endCallback("数据回传成功！");
-			}
+			},
+			error: function(xhr, status, error) {
+				_.hideProgress();
+				loadError("数据回传失败！ ", xhr, status, error);
+			},
 		});
 	};
 
@@ -373,6 +387,12 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		});
 	};
 
+	function preparePage() {
+		$(".scale-personal-item-input").val("");
+		_.scalePanelScaleGo.addClass("disable");
+		_.hideProgress();
+	};
+
 	function getApi(path) {
 		return apiAddress + path;
 	};
@@ -391,6 +411,14 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		});
 
 		return hasEmpty;
+	};
+
+	function loadError(text, xhr, textStatus, errorThrown) {
+		var msg = text;
+		msg += "[" + xhr.status + "]";
+		msg += "[" + textStatus + "]";
+
+		_.endCallback(msg);
 	};
 
 };
