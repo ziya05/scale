@@ -185,7 +185,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 						var r = $(this);
 						var nextId = r.data("scale-next");
-						if (nextId == -1) {
+						if (nextId == 0) {
 							nextId = dv.data("item-id") + 1;
 						}
 
@@ -269,6 +269,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		var info = {
 			name: $("#scale-personal-name").val().trim(),
 			gender: $("#scale-personal-gender").val().trim(),
+			age: $("#scale-personal-age").val().trim(),
 			items: extraInfo
 		};
 

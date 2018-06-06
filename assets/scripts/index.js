@@ -1,7 +1,9 @@
-var apiAddress = "http://localhost:8080/ScaleAPI"
+var apiAddress;
 var scale;
 
 $(document).ready(function(){
+	apiAddress = getProtocalHost() + "/ScaleAPI";
+
 	var zyAlert = new ZyAlert();
 	var progress = new Progress($(".scale-panel"));
 	scale = new Scale(apiAddress, 
