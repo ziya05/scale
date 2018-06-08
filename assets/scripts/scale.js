@@ -124,7 +124,14 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			var items = $(".scale-personal-item-input");
 			items
 				.keyup(function() {
+					checkEmpty();
+			});
 
+			items.filter("select").change(function(){
+				checkEmpty();
+			});
+
+			function checkEmpty() {
 				if (!hasEmpty(items)
 					&& _.scalePanelScaleGo.hasClass("disable")) {
 					_.scalePanelScaleGo.removeClass("disable");
@@ -133,7 +140,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 					&& !_.scalePanelScaleGo.hasClass("disable")) {
 					_.scalePanelScaleGo.addClass("disable");
 				}
-			});
+			};
 
 			_.hideProgress();
 			scale.scalePanelPersonal.slideDown(500);
@@ -150,10 +157,12 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 			var totalItemCount = data.items.length;
 			$.each(data.items, function(i, item) {
+				var questionType = item.questionType;
 
 				var dv = $("<div></div>")
 					.addClass("scale-item")
 					.attr("data-item-id", item.id)
+					.attr("data-item-type", questionType)
 					.appendTo(_.scalePanelRun);
 
 				$("<p></p>")
@@ -166,50 +175,78 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 					.appendTo(dv);
 
 				$.each(item.items, function(i, option) {
-					var radioBox = $("<div></div>")
+					var optionBox = $("<div></div>")
 						.addClass("scale-item-option-box")
 						.appendTo(optionPanel)
 						.click(function (){
 							$(this).children(".scale-item-option").click();
 						});
 
-					var radio = $("<input type='radio' />")
-					.attr("name", item.id)
-					.addClass("scale-item-option")
-					.val(option.optionId)
-					.attr("data-scale-next", option.next)
-					.data("item-score", option.score)
-					.appendTo(radioBox);
+					if (questionType == 1) {
+						var radio = $("<input type='radio' />")
+						.attr("name", item.id)
+						.addClass("scale-item-option")
+						.val(option.optionId)
+						.attr("data-scale-next", option.next)
+						.data("item-score", option.score)
+						.appendTo(optionBox);
 
-					radio.click(function(e){
+						radio.click(function(e){
 
-						var r = $(this);
-						var nextId = r.data("scale-next");
-						if (nextId == 0) {
-							nextId = dv.data("item-id") + 1;
-						}
+							var r = $(this);
+							var nextId = r.data("scale-next");
+							if (nextId == 0) {
+								nextId = dv.data("item-id") + 1;
+							}
 
-						if (nextId > totalItemCount) {
-							_.scalePanelRun.fadeOut(300, function() {
-								_.showResult(id, totalItemCount);
-							});
-						} else {
-							dv.fadeOut(300, function(){
-								 _.scalePanelRun.find(".scale-item")
-								 .filter("[data-item-id=" + nextId + "]")
-								 .show(300);
-							});
-						}
+							jump(dv, nextId, totalItemCount);
 
-						e.stopPropagation();
-					});
+							e.stopPropagation();
+						});
+					} else if (questionType == 2) {
+						var ck = $("<input type='checkbox' />")
+							.attr("name", item.id)
+							.addClass("scale-item-option")
+							.val(option.optionId)
+							// .attr("data-scale-next", option.next)
+							.data("item-score", option.score)
+							.appendTo(optionBox);
+					}								
 
 					$("<span></span>")
 						.addClass("scale-item-option-text")
 						.text(option.optionId + ". " + option.content)
-						.appendTo(radioBox);
+						.appendTo(optionBox);
 				});
+
+				if (questionType == 2 || questionType == 4) {
+					var tools = $("<div></div>")
+						.addClass("scale-item-tools")
+						.appendTo(dv);
+
+					$("<input type='button' value='下一题' />")
+						.addClass("scale-item-tools-btn")
+						.appendTo(tools)
+						.click(function(){
+							var nextId = dv.data("item-id") + 1;
+							jump(dv, nextId, totalItemCount);
+						});
+				}
 			});
+
+			function jump(dv, nextId, totalItemCount) {
+				if (nextId > totalItemCount) {
+					_.scalePanelRun.fadeOut(300, function() {
+						_.showResult(id, totalItemCount);
+					});
+				} else {
+					dv.fadeOut(300, function(){
+						 _.scalePanelRun.find(".scale-item")
+						 .filter("[data-item-id=" + nextId + "]")
+						 .show(300);
+					});
+				}
+			};
 
 			_.hideProgress();
 			 _.scalePanelRun.find(".scale-item").filter("[data-item-id=1]")
@@ -228,16 +265,31 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 		var data = [];
 		for(var i = 1; i <= totalItemCount; i++) {
-			
+
 			var val = -1;
-			var score = -1;
+			var score = 0;
 
-			var option = dvItems.filter("[data-item-id=" + i + "]")
-				.find(".scale-item-option:checked");
+			var dvItem = dvItems.filter("[data-item-id=" + i + "]");
+			var questionType = dvItem.data("item-type");
+			var option = dvItem 
+					.find(".scale-item-option:checked");
 
-			if (option.length == 1) {
-				val = option.val();
-				score = option.data("item-score");
+			if (questionType == 1) {
+				if (option.length == 1) {
+					val = option.val();
+					score = option.data("item-score");
+				}
+			} else if (questionType == 2) {
+
+				if (option.length >= 1) {
+					val = "";
+					score = 0;
+
+					$.each(option, function(i, c) {
+						val += $(c).val();
+						score += parseInt($(c).data("item-score"));
+					});
+				}
 			}
 
 			var optionSelected = {

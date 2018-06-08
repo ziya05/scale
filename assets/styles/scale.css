@@ -164,7 +164,12 @@
 	vertical-align: middle;
 }
 
+.scale-panel-run {
+	height: 100%;
+}
+
 .scale-item {
+	position: relative;
 	display: none;
 	width: 100%;
 	height: 100%;
@@ -172,7 +177,7 @@
 }
 
 .scale-item-title {
-	height: 100px;
+	height: 70px;
 	font-size: 16px;
 	color: #fff;
 }
@@ -184,6 +189,9 @@
 .scale-item-option {
 	font-size: 18px;
 	cursor: pointer;
+	width: 20px;
+	height: 20px;
+	vertical-align: middle;
 }
 
 .scale-item-option-box {
@@ -201,6 +209,26 @@
 	margin-left: 10px;
 	color: #fff;
 	cursor: pointer;
+}
+
+.scale-item-tools {
+	height: 50px;
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+	text-align: center;
+}
+
+.scale-item-tools-btn {
+	width: 100px;
+	height: 30px;
+	border: 0;
+	border-radius: 15px;
+	cursor: pointer;
+}
+
+.scale-item-tools-btn:hover {
+	background-color: #aaa;
 }
 
 .scale-panel-result-info {
