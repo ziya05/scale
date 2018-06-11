@@ -130,6 +130,7 @@ html, body {
 	font-weight: 600;
 	cursor: pointer;
 	border: 0;
+	text-align: center;
 }
 
 .ui-btn:hover {

@@ -90,6 +90,11 @@
 	max-height: calc(100% - 180px);
 	overflow-y: auto;
 	background: linear-gradient(to bottom, #ccc 0%, #fff 100%);
+	word-wrap: break-word;
+	white-space: pre-wrap;
+	line-height: 1.8;
+	font-size: 16px;
+	font-family: "Microsoft YaHei";
 }
 
 .scale-panel-scale-tool {
@@ -110,6 +115,10 @@
 	border-radius: 20px;
 	font-weight: 600;
 	color: #fff;
+}
+
+.scale-btn.scale-btn-load {
+	background: linear-gradient(to bottom, #00c 0%, #06f 100%);
 }
 
 .scale-btn:hover {

@@ -16,6 +16,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 	this.scalePanelPersonal = null;
 	this.scalePanelPersonalExtra = null;
+	this.scalePanelPersonalBack = null;
 	this.scalePanelScaleGo = null;
 
 	this.scalePanelRun = null;
@@ -105,6 +106,8 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		var url = _.getPersonalInfoByScaleId + id;
 		$.get(url, function(data, status) {
 			$.each(data.items, function(i, item){
+				var itemType = item.infoType;
+
 				var dvItem = $("<div></div>")
 					.addClass("scale-personal-item")
 					.appendTo(_.scalePanelPersonalExtra);
@@ -114,22 +117,36 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 					.text(item.title + ":")
 					.appendTo(dvItem);
 
-				$("<input type='text' />")
+				var input = null;
+				if (itemType == 1) {
+					input = $("<input type='text' />");
+						
+				} else if (itemType == 2) {
+					input = $("<select></select>");
+					$("<option></option>")
+						.appendTo(input);
+
+					$.each(item.itemOptions, function(i, option) {
+						$("<option></option>")
+							.val(option.option)
+							.text(option.option)
+							.appendTo(input);
+					});
+				} 
+
+				if (input != null) {
+					input
 					.addClass("scale-personal-item-input")
-					.data("scale-personal-item-name", item.name)
-					.data("scale-personal-item-title", item.title)
-					.appendTo(dvItem);
+						.data("scale-personal-item-name", item.name)
+						.data("scale-personal-item-title", item.title)
+						.appendTo(dvItem);
+				}
 			});
 
 			var items = $(".scale-personal-item-input");
-			items
-				.keyup(function() {
-					checkEmpty();
-			});
 
-			items.filter("select").change(function(){
-				checkEmpty();
-			});
+			items.filter("input").keyup(checkEmpty);
+			items.filter("select").change(checkEmpty);
 
 			function checkEmpty() {
 				if (!hasEmpty(items)
@@ -330,7 +347,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			info: info
 		};
 
-		_.showProgress("正在回传数据，请稍等...")
+		_.showProgress("正在保存数据，请稍等...")
 
 		$.ajax({
 			type: "post",
@@ -342,11 +359,11 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			success: function(data) {
 				_.hideProgress();
 			
-				endCallback("数据回传成功！");
+				endCallback("数据保存成功！");
 			},
 			error: function(xhr, status, error) {
 				_.hideProgress();
-				loadError("数据回传失败！ ", xhr, status, error);
+				loadError("数据保存失败！ ", xhr, status, error);
 			},
 		});
 	};
@@ -393,6 +410,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 		scale.scalePanelPersonal = $(".scale-panel-personal");
 		scale.scalePanelPersonalExtra = $(".scale-personal-extra");
+		scale.scalePanelPersonalBack = $(".scale-btn-back-desc");
 		scale.scalePanelScaleGo = $(".scale-btn-go");
 
 		scale.scalePanelRun = $(".scale-panel-run");
@@ -407,6 +425,12 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 				scale.scaleLstPanel.show(500);
 			})
 		});
+
+		scale.scalePanelPersonalBack.click(function(){
+			scale.scalePanelPersonal.hide(500, function() {
+				scale.scalePanelScale.show(500);
+			})
+		})
 
 		scale.scalePanelScaleLoad.click(function(){
 			scale.scalePanelPersonalExtra.empty();
