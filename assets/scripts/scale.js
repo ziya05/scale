@@ -7,23 +7,18 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	this.scaleLstContainer = null;
 	this.scaleLstPanelClose = null;
 
-	this.scalePanelScale = null;
-	this.scalePanelScaleTitle = null;
-	this.scalePanelScaleDescription = null;
-	this.scalePanelScaleReselect = null;
-	this.scalePanelScalePersonal = null;
-	this.scalePanelScaleLoad = null;
-
 	this.scalePanelPersonal = null;
 	this.scalePanelPersonalExtra = null;
 	this.scalePanelPersonalBack = null;
-	this.scalePanelScaleGo = null;
+	this.scalePanelPersonalGo = null;
+
+	this.scalePanelGuide = null;
+	this.scalePanelGuideTitle = null;
+	this.scalePanelGuideDescription = null;
+	this.scalePanelGuideBack = null;
+	this.scalePanelGuideGo = null;
 
 	this.scalePanelRun = null;
-
-	this.scalePanelResult = null;
-	this.scalePanelResultInfo = null;
-	this.scalePanelResultClose = null;
 
 	this.apiAddress = apiAddress;
 	this.getScalesUrl = getApi("/ScaleService/scales");
@@ -33,9 +28,9 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 	this.endCallback = endCallback;
 
-	init(this);
+	var _ = this;
 
-	var _ = this
+	init();
 
 	this.showScaleList = function(callback) {
 		preparePage();
@@ -47,21 +42,15 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 					callback();
 				}
 
-				_.updateScaleList(function(s, e){
-					_.scalePanelScaleTitle.text(s.name);
-					_.scalePanelScaleDescription.text(s.description);
-
-					_.scaleLstPanel.hide(300, function(){
-						_.scalePanelScale
-							.data("scale-id", s.id)
-							.slideDown(500);
-					});
+				loadScaleList(false, function(data) {
+					paintLstPage(data);
+					showLstPage();
 				});
 			 });
 		});
 	}
 
-	this.updateScaleList = function(rowClickCallback, enforce) {
+	function loadScaleList(enforce, callback) {
 		if (typeof enforce == "undefined" 
 			|| enforce == null
 			|| enforce == false) {
@@ -72,28 +61,13 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			}
 		}
 
-		_.showProgress("正在加载量表列表， 请稍等...");
+		_showProgress("正在加载量表列表， 请稍等...");
 
 		$.get(_.getScalesUrl, function(data, status){
-			_.hideProgress();
-
-				$.each(data, function(i, d) {
-					var div = $("<div></div>")
-						.addClass("scale-lst-item")
-						.appendTo(_.scaleLstContainer)
-						.click(function(e){
-							rowClickCallback(d, e);
-						});
-
-					$("<p></p>")
-						.addClass("scale-lst-item-name")
-						.text(d.name)
-						.appendTo(div);
-
-					_.scaleLstContainer.data("loaded", "true");
-				});
-
-				_.scaleLstPanel.slideDown(300);
+			    _hideProgress();
+				if (callback != null) {
+					callback(data);
+				}
 			}, 
 		"json")
 		.fail(function(xhr, status, error){
@@ -101,11 +75,51 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		});
 	};
 
-	this.loadPersonalInfo = function(id) {
-		_.showProgress("正在加载所需用户信息，请稍等...");
+	function paintLstPage(data) {
+		$.each(data, function(i, d) {
+			var div = $("<div></div>")
+				.addClass("scale-lst-item")
+				.appendTo(_.scaleLstContainer)
+				.click(function(e){
+					hideLstPage(function() {
+						paintDescription(d.id, d.name, d.description);
+
+						_.scalePanelPersonalExtra.empty();
+						loadPersonalInfo(d.id, function(data) {
+							paintPersonal(data);
+							showPersonalPage();
+						});
+					});
+
+				});
+
+			$("<p></p>")
+				.addClass("scale-lst-item-name")
+				.text(d.name)
+				.appendTo(div);
+
+			_.scaleLstContainer.data("loaded", "true");
+		});
+	};
+
+	function loadPersonalInfo(id, callback) {
+		_showProgress("正在加载所需用户信息，请稍等...");
 		var url = _.getPersonalInfoByScaleId + id;
 		$.get(url, function(data, status) {
-			$.each(data.items, function(i, item){
+
+			_hideProgress();
+			if (callback != null) {
+				callback(data);
+			}
+
+		}, "json")
+		.fail(function(xhr, status, error){
+			loadError("数据加载失败！", xhr, status, error);
+		});
+	};
+
+	function paintPersonal(data) {
+		$.each(data.items, function(i, item){
 				var itemType = item.infoType;
 
 				var dvItem = $("<div></div>")
@@ -150,29 +164,40 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 			function checkEmpty() {
 				if (!hasEmpty(items)
-					&& _.scalePanelScaleGo.hasClass("disable")) {
-					_.scalePanelScaleGo.removeClass("disable");
+					&& _.scalePanelPersonalGo.hasClass("disable")) {
+					_.scalePanelPersonalGo.removeClass("disable");
 
 				} else if(hasEmpty(items)
-					&& !_.scalePanelScaleGo.hasClass("disable")) {
-					_.scalePanelScaleGo.addClass("disable");
+					&& !_.scalePanelPersonalGo.hasClass("disable")) {
+					_.scalePanelPersonalGo.addClass("disable");
 				}
 			};
+	};
 
-			_.hideProgress();
-			scale.scalePanelPersonal.slideDown(500);
+	function paintDescription(id, name, description) {
+		_.scalePanelGuideTitle.text(name);
+		_.scalePanelGuideDescription.text(description);
+		_.scalePanelGuide.data("scale-id", id)
+	};
+
+	function loadScale(id, callback) {
+		_showProgress("正在加载指定量表，请稍等...");
+		var url = _.getScaleById + id;
+		$.get(url, function(data, status){
+			_hideProgress();
+			 if (callback != null) {
+			 	callback(data);
+			 }
+
 		}, "json")
 		.fail(function(xhr, status, error){
 			loadError("数据加载失败！", xhr, status, error);
 		});
+
 	};
 
-	this.runScale = function(id) {
-		_.showProgress("正在加载指定量表，请稍等...");
-		var url = _.getScaleById + id;
-		$.get(url, function(data, status){
-
-			var totalItemCount = data.items.length;
+	function paintScale(data) {
+		var totalItemCount = data.items.length;
 			$.each(data.items, function(i, item) {
 				var questionType = item.questionType;
 
@@ -225,7 +250,6 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 							.attr("name", item.id)
 							.addClass("scale-item-option")
 							.val(option.optionId)
-							// .attr("data-scale-next", option.next)
 							.data("item-score", option.score)
 							.appendTo(optionBox);
 					}								
@@ -253,9 +277,9 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 			function jump(dv, nextId, totalItemCount) {
 				if (nextId > totalItemCount) {
-					_.scalePanelRun.fadeOut(300, function() {
-						_.showResult(id, totalItemCount);
-					});
+					hideScalePage(function() {
+						showResult(data.id, totalItemCount);
+					})
 				} else {
 					dv.fadeOut(300, function(){
 						 _.scalePanelRun.find(".scale-item")
@@ -264,19 +288,9 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 					});
 				}
 			};
-
-			_.hideProgress();
-			 _.scalePanelRun.find(".scale-item").filter("[data-item-id=1]")
-			 .show(300);
-
-		}, "json")
-		.fail(function(xhr, status, error){
-			loadError("数据加载失败！", xhr, status, error);
-		});
-
 	};
 
-	this.showResult = function(id, totalItemCount) {
+	function showResult(id, totalItemCount) {
 
 		var dvItems = $(".scale-item");
 
@@ -347,30 +361,33 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			info: info
 		};
 
-		_.showProgress("正在保存数据，请稍等...")
+		_showProgress("正在保存数据，请稍等...")
 
 		$.ajax({
 			type: "post",
 			url: _.getResult + id,
-			// async: true,
 			data: JSON.stringify(historyData),
 			contentType: "application/json; charset=utf-8",
-			dataType: "json",
+			dataType: "text",
 			success: function(data) {
-				_.hideProgress();
+				_hideProgress();
 			
-				endCallback("数据保存成功！");
+				if (data == "") {
+					endCallback("数据保存成功！");
+				} else {
+					endCallback("数据保存失败！[" + data + "]")
+				}
 			},
 			error: function(xhr, status, error) {
-				_.hideProgress();
+				_hideProgress();
 				loadError("数据保存失败！ ", xhr, status, error);
 			},
 		});
 	};
 
 	this.close = function(callback) {
-		scale.panel.slideUp(500, function(){
-			scale.mask.hide(500, function() {
+		_.panel.slideUp(500, function(){
+			_.mask.hide(500, function() {
 				if (typeof callback != "undefined" 
 					&& callback != null) {
 					callback();
@@ -379,7 +396,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		});
 	};
 
-	this.showProgress = function(text) {
+	function _showProgress(text) {
 
 		if (typeof showProgress != "undefined" 
 		&& showProgress != null) {
@@ -387,87 +404,135 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		}
 	};
 
-	this.hideProgress = function() {
+	function _hideProgress() {
 		if (typeof hideProgress != "undefined"
 			&& hideProgress != null) {
 			hideProgress();
 		}
 	}
 
-	function init(scale) {
-		scale.mask = $(".scale-mask");
-		scale.panel = $(".scale-panel");
+	function init() {
+		_.mask = $(".scale-mask");
+		_.panel = $(".scale-panel");
 
-		scale.scaleLstPanel = $(".scale-panel-lst");
-		scale.scaleLstContainer = $(".scale-lst-container");
-		scale.scaleLstPanelClose = $(".scale-panel-lst-close");
+		_.scaleLstPanel = $(".scale-panel-lst");
+		_.scaleLstContainer = $(".scale-lst-container");
+		_.scaleLstPanelClose = $(".scale-panel-lst-close");
 
-		scale.scalePanelScale = $(".scale-panel-scale");
-		scale.scalePanelScaleTitle = $(".scale-panel-scale > .scale-panel-title");
-		scale.scalePanelScaleDescription = $(".scale-panel-scale-description");
-		scale.scalePanelScaleReselect = $(".scale-btn-reselect");
-		scale.scalePanelScaleLoad = $(".scale-btn-load");
+		_.scalePanelPersonal = $(".scale-panel-personal");
+		_.scalePanelPersonalExtra = $(".scale-personal-extra");
+		_.scalePanelPersonalBack = $(".scale-btn-personal-back");
+		_.scalePanelPersonalGo = $(".scale-btn-personal-go");
 
-		scale.scalePanelPersonal = $(".scale-panel-personal");
-		scale.scalePanelPersonalExtra = $(".scale-personal-extra");
-		scale.scalePanelPersonalBack = $(".scale-btn-back-desc");
-		scale.scalePanelScaleGo = $(".scale-btn-go");
+		_.scalePanelGuide = $(".scale-panel-guide");
+		_.scalePanelGuideTitle = $(".scale-panel-guide > .scale-panel-title");
+		_.scalePanelGuideDescription = $(".scale-panel-guide-description");
+		_.scalePanelGuideBack = $(".scale-btn-guide-back");
+		_.scalePanelGuideGo = $(".scale-btn-guide-go");
 
-		scale.scalePanelRun = $(".scale-panel-run");
+		_.scalePanelRun = $(".scale-panel-run");
 
-
-		scale.scalePanelResult = $(".scale-panel-result");
-		scale.scalePanelResultInfo = $(".scale-panel-result-info");
-		scale.scalePanelResultClose = $(".scale-btn-close");
-
-		scale.scalePanelScaleReselect.click(function(){
-			scale.scalePanelScale.hide(500, function() {
-				scale.scaleLstPanel.show(500);
-			})
+		_.scalePanelPersonalBack.click(function(){
+			hidePersonalPage(showLstPage);
 		});
 
-		scale.scalePanelPersonalBack.click(function(){
-			scale.scalePanelPersonal.hide(500, function() {
-				scale.scalePanelScale.show(500);
-			})
-		})
-
-		scale.scalePanelScaleLoad.click(function(){
-			scale.scalePanelPersonalExtra.empty();
-			scale.scalePanelScale.slideUp(500, function() {
-				var id = scale.scalePanelScale.data("scale-id");
-				scale.loadPersonalInfo(id);
-			})
-		});
-
-		scale.scalePanelScaleGo.click(function() {
-			if(isEnable(scale.scalePanelScaleGo)) {
-				scale.scalePanelRun.empty();
-				scale.scalePanelPersonal.slideUp(500, function(){
-					scale.scalePanelRun.slideDown(500, function() {
-						var id = scale.scalePanelScale.data("scale-id");
-						scale.runScale(id);
-					})
-				})
+		_.scalePanelPersonalGo.click(function() {
+			if(isEnable(_.scalePanelPersonalGo)) {
+				hidePersonalPage(showDescPage);
 			}
 		});
 
-		scale.scaleLstPanelClose.click(function(){
+		_.scalePanelGuideBack.click(function(){
+			hideDescPage(showPersonalPage);
+		});
+
+		_.scalePanelGuideGo.click(function(){
+			hideDescPage(function(){
+				_.scalePanelRun.empty();
+				var id = _.scalePanelGuide.data("scale-id");
+				loadScale(id, function(data) {
+					paintScale(data);
+					showScalePage();
+				});
+			});			
+		});
+
+		_.scaleLstPanelClose.click(function(){
 			endCallback(null, true);
 		});
 
-		scale.scalePanelResultClose.click(function(){
-			scale.panel.slideUp(500, function(){
-				scale.scalePanelResult.hide();
-				scale.mask.hide(500);
+	};
+
+	function showLstPage(callback) {
+		_.scaleLstPanel.show(300, function() {
+			if (callback != null) {
+				callback();
+			}
+		});
+	};
+
+	function hideLstPage(callback) {
+		_.scaleLstPanel.hide(300, function() {
+			if (callback != null) {
+				callback();
+			}
+		});
+	};
+
+	function showPersonalPage(callback) {
+		_.scalePanelPersonal.slideDown(500, function() {
+			if (callback != null) {
+				callback();
+			}
+		});
+	};
+
+	function hidePersonalPage(callback) {
+		_.scalePanelPersonal.slideUp(500, function() {
+			if (callback != null) {
+				callback();
+			}
+		});
+	};
+
+	function showDescPage(callback) {
+		_.scalePanelGuide.slideDown(500, function() {
+			if (callback != null) {
+				callback();
+			}
+		});
+	};
+
+	function hideDescPage(callback) {
+		_.scalePanelGuide.slideUp(500, function() {
+			if (callback != null) {
+				callback();
+			}
+		});
+	};
+
+	function showScalePage(callback) {
+		_.scalePanelRun.show();
+		_.scalePanelRun.find(".scale-item").filter("[data-item-id=1]")
+		.show(300, function() {
+				if (callback != null) {
+					callback();
+				}
 			});
+	};
+
+	function hideScalePage(callback) {
+		_.scalePanelRun.hide(function() {
+			if (callback != null) {
+				callback();
+			}
 		});
 	};
 
 	function preparePage() {
 		$(".scale-personal-item-input").val("");
-		_.scalePanelScaleGo.addClass("disable");
-		_.hideProgress();
+		_.scalePanelPersonalGo.addClass("disable");
+		_hideProgress();
 	};
 
 	function getApi(path) {

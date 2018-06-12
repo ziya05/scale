@@ -6,6 +6,7 @@
 	bottom: 0;
 	background-color: #fff;
 	opacity: 0.8;
+	z-index: 10;
 }
 
 .scale-panel {
@@ -20,6 +21,7 @@
 	background: linear-gradient(to bottom,#666 0%,#000 100%);
 	border: 10px solid #fff;
 	opacity: 1;
+	z-index: 100;
 }
 
 .scale-panel-lst {
@@ -58,6 +60,7 @@
 
 .scale-lst {
 	margin: 0 auto;
+	padding: 0 10px;
 	width: 90%;
 	font-size: 16px;
 	height: calc(100% - 100px);
@@ -79,11 +82,11 @@
 	cursor: pointer;
 }
 
-.scale-panel-scale {
+.scale-panel-guide {
 	height: 100%;
 }
 
-.scale-panel-scale-description {
+.scale-panel-guide-description {
 	margin: 30px;
 	padding: 10px;
 	height: calc(100% - 180px);
@@ -97,7 +100,7 @@
 	font-family: "Microsoft YaHei";
 }
 
-.scale-panel-scale-tool {
+.scale-panel-tool {
 	height: 100px;
 	vertical-align: middle;
 	text-align: center;
@@ -117,7 +120,7 @@
 	color: #fff;
 }
 
-.scale-btn.scale-btn-load {
+.scale-btn-guide-go {
 	background: linear-gradient(to bottom, #00c 0%, #06f 100%);
 }
 
@@ -238,22 +241,4 @@
 
 .scale-item-tools-btn:hover {
 	background-color: #aaa;
-}
-
-.scale-panel-result-info {
-	margin: 10px;
-	padding: 20px;
-	height: calc(100% - 100px);
-	overflow-y: auto;
-	background: linear-gradient(to bottom, #ccc 0%, #fff 100%);
-}
-
-.scale-result-factor {
-	margin: 10px;
-	padding: 10px;
-}
-
-.scale-result-factor-name {
-	line-height: 2;
-	font-weight: 600;
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>心理测评系统</title>
+		<title>心理测评系统V1.5</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="assets/styles/index.css" />
 		<link rel="stylesheet" href="assets/styles/scale.css" />
@@ -24,7 +24,7 @@
 			</div>
 			<div class="ui-text">
 				<div class="ui-title">
-					心理测评系统
+					心理测评系统V1.5
 				</div>
 				<div id="btnStart" class="ui-btn">
 					选择量表
@@ -43,18 +43,6 @@
 				</div>
 				<div class="scale-panel-lst-close">X</div>
 			</div>
-			<div class="scale-panel-scale" style="display: none;">
-				<p class="scale-panel-title">
-				</p>
-				<p>
-					<pre class="scale-panel-scale-description">
-					</pre>
-				</p>
-				<div class="scale-panel-scale-tool">
-					<input type="button" value="返回量表列表" class="scale-btn scale-btn-reselect" />
-					<input type="button" value="开始" class="scale-btn scale-btn-load"/>
-				</div>
-			</div>
 			<div class="scale-panel-personal" style="display: none">
 				<p class="scale-panel-title">
 					请填写个人信息：
@@ -65,7 +53,7 @@
 							<span class="scale-personal-item-title">姓名：</span><input id="scale-personal-name" type="text" class="scale-personal-item-input" />
 						</div>
 						<div class="scale-personal-item">
-							<span class="scale-personal-item-title">性别：</span><select class="scale-personal-item-input" id="scale-personal-gender"><option value=""></option><option value="男">男</option><option value="女">女</option></select><!-- <input id="scale-personal-gender" type="text" class="scale-personal-item-input" /> -->
+							<span class="scale-personal-item-title">性别：</span><select class="scale-personal-item-input" id="scale-personal-gender"><option value=""></option><option value="男">男</option><option value="女">女</option></select>
 						</div>
 						<div class="scale-personal-item">
 							<span class="scale-personal-item-title">年龄：</span><input id="scale-personal-age" type="text" class="scale-personal-item-input" />
@@ -74,9 +62,21 @@
 					<div class="scale-personal-extra">
 					</div>
 				</div>
-				<div class="scale-panel-scale-tool">
-					<input type="button" value="返回" class="scale-btn scale-btn-back-desc" />
-					<input type="button" value="确定" class="scale-btn scale-btn-go disable"/>
+				<div class="scale-panel-tool">
+					<input type="button" value="返回" class="scale-btn scale-btn-personal-back" />
+					<input type="button" value="确定" class="scale-btn scale-btn-personal-go disable"/>
+				</div>
+			</div>
+			<div class="scale-panel-guide" style="display: none;">
+				<p class="scale-panel-title">
+				</p>
+				<p>
+					<pre class="scale-panel-guide-description">
+					</pre>
+				</p>
+				<div class="scale-panel-tool">
+					<input type="button" value="返回" class="scale-btn scale-btn-guide-back" />
+					<input type="button" value="开始" class="scale-btn scale-btn-guide-go"/>
 				</div>
 			</div>
 			<div class="scale-panel-run" style="display: none">
@@ -84,12 +84,13 @@
 			<div class="scale-panel-result" style="display: none">
 				<div class="scale-panel-result-info">
 				</div>
-				<div class="scale-panel-scale-tool">
+				<div class="scale-panel-tool">
 					<input type="button" value="确定" class="scale-btn scale-btn-close"/>
 				</div>
 			</div>
 		</div>
 		<div class="dv-sound playing">
 		</div>
+		<a href="/ScaleAdmin/Index" class="link-go-admin">进入管理系统</a>
 	</body>
 </html>
