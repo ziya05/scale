@@ -176,6 +176,11 @@
 	vertical-align: middle;
 }
 
+.scale-personal-item-input:focus {
+	outline: none;
+	border: 2px solid rgb(227, 143, 45);
+}
+
 .scale-panel-run {
 	height: 100%;
 }

@@ -26,8 +26,6 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	this.getScaleById = getApi("/ScaleService/scale/");
 	this.getResult = getApi("/ScaleService/scale/result/");
 
-	this.endCallback = endCallback;
-
 	var _ = this;
 
 	init();
@@ -96,6 +94,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			$("<p></p>")
 				.addClass("scale-lst-item-name")
 				.text(d.name)
+				.attr("title", "题目数量：" + d.questionCount)
 				.appendTo(div);
 
 			_.scaleLstContainer.data("loaded", "true");
@@ -199,6 +198,8 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	function paintScale(data) {
 		var totalItemCount = data.items.length;
 			$.each(data.items, function(i, item) {
+
+				// 1, 单选； 2， 多选； 3， 保留； 4， 描述信息
 				var questionType = item.questionType;
 
 				var dv = $("<div></div>")
@@ -207,58 +208,66 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 					.attr("data-item-type", questionType)
 					.appendTo(_.scalePanelRun);
 
-				$("<p></p>")
+				if (questionType == 1 || questionType == 2) {
+
+					$("<p></p>")
 					.addClass("scale-item-title")
 					.text("第" + item.id + "题 " + item.title)
 					.appendTo(dv);
 
-				var optionPanel = $("<div></div")
-					.addClass("scale-item-option-panel")
-					.appendTo(dv);
+					var optionPanel = $("<div></div")
+						.addClass("scale-item-option-panel")
+						.appendTo(dv);
 
-				$.each(item.items, function(i, option) {
-					var optionBox = $("<div></div>")
-						.addClass("scale-item-option-box")
-						.appendTo(optionPanel)
-						.click(function (){
-							$(this).children(".scale-item-option").click();
-						});
+					$.each(item.items, function(i, option) {
+						var optionBox = $("<div></div>")
+							.addClass("scale-item-option-box")
+							.appendTo(optionPanel)
+							.click(function (){
+								$(this).children(".scale-item-option").click();
+							});
 
-					if (questionType == 1) {
-						var radio = $("<input type='radio' />")
-						.attr("name", item.id)
-						.addClass("scale-item-option")
-						.val(option.optionId)
-						.attr("data-scale-next", option.next)
-						.data("item-score", option.score)
-						.appendTo(optionBox);
-
-						radio.click(function(e){
-
-							var r = $(this);
-							var nextId = r.data("scale-next");
-							if (nextId == 0) {
-								nextId = dv.data("item-id") + 1;
-							}
-
-							jump(dv, nextId, totalItemCount);
-
-							e.stopPropagation();
-						});
-					} else if (questionType == 2) {
-						var ck = $("<input type='checkbox' />")
+						if (questionType == 1) {
+							var radio = $("<input type='radio' />")
 							.attr("name", item.id)
 							.addClass("scale-item-option")
 							.val(option.optionId)
+							.attr("data-scale-next", option.next)
 							.data("item-score", option.score)
 							.appendTo(optionBox);
-					}								
 
-					$("<span></span>")
-						.addClass("scale-item-option-text")
-						.text(option.optionId + ". " + option.content)
-						.appendTo(optionBox);
-				});
+							radio.click(function(e){
+
+								var r = $(this);
+								var nextId = r.data("scale-next");
+								if (nextId == 0) {
+									nextId = dv.data("item-id") + 1;
+								}
+
+								jump(dv, nextId, totalItemCount);
+
+								e.stopPropagation();
+							});
+						} else if (questionType == 2) {
+							var ck = $("<input type='checkbox' />")
+								.attr("name", item.id)
+								.addClass("scale-item-option")
+								.val(option.optionId)
+								.data("item-score", option.score)
+								.appendTo(optionBox);
+						}								
+
+						$("<span></span>")
+							.addClass("scale-item-option-text")
+							.text(option.optionId + ". " + option.content)
+							.appendTo(optionBox);
+					});
+				} else if (questionType == 4) {
+					$("<pre></pre>")
+						.addClass("scale-panel-guide-description")
+						.text(item.title)
+						.appendTo(dv);
+				}				
 
 				if (questionType == 2 || questionType == 4) {
 					var tools = $("<div></div>")
@@ -373,9 +382,9 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 				_hideProgress();
 			
 				if (data == "") {
-					endCallback("数据保存成功！");
+					_endCallback("数据保存成功！");
 				} else {
-					endCallback("数据保存失败！[" + data + "]")
+					_endCallback("数据保存失败！[" + data + "]")
 				}
 			},
 			error: function(xhr, status, error) {
@@ -408,6 +417,12 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		if (typeof hideProgress != "undefined"
 			&& hideProgress != null) {
 			hideProgress();
+		}
+	}
+
+	function _endCallback(msg, noShowAlert) {
+		if (endCallback != null) {
+			endCallback(msg, noShowAlert);
 		}
 	}
 
@@ -458,7 +473,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		});
 
 		_.scaleLstPanelClose.click(function(){
-			endCallback(null, true);
+			_endCallback(null, true);
 		});
 
 	};
@@ -560,7 +575,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		msg += "[" + xhr.status + "]";
 		msg += "[" + textStatus + "]";
 
-		_.endCallback(msg);
+		_endCallback(msg);
 	};
 
 };
