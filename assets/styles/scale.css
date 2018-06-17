@@ -51,7 +51,7 @@
 	color: #555;
 }
 
-.scale-panel-title, .scale-panel-title {
+.scale-panel-title {
 	margin: 20px;
 	font-weight: 600;
 	font-size: 16px;
@@ -183,6 +183,7 @@
 
 .scale-panel-run {
 	height: 100%;
+	font-size: 18px;
 }
 
 .scale-item {
@@ -195,7 +196,6 @@
 
 .scale-item-title {
 	height: 70px;
-	font-size: 16px;
 	color: #fff;
 }
 
@@ -204,7 +204,6 @@
 }
 
 .scale-item-option {
-	font-size: 18px;
 	cursor: pointer;
 	width: 20px;
 	height: 20px;
