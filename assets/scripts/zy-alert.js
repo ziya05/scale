@@ -48,11 +48,15 @@ function ZyAlert() {
 
 		_.content.text(text);
 
+		_.btnOK.unbind("click");
 		_.btnOK.click(function(){
 			close(okCallback);
 		});
 
+
 		if (cancelCallback != null) {
+
+			_.btnCancel.unbind("click");
 			_.btnCancel.removeClass("hidden")
 				.click(function() {
 					close(cancelCallback);

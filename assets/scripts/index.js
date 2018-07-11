@@ -1,39 +1,54 @@
-var apiAddress;
-var scale;
 
 $(document).ready(function(){
-	apiAddress = getProtocalHost() + "/ScaleAPI";
+	var apiAddress = getProtocalHost() + "/ScaleAPI";
 
 	var zyAlert = new ZyAlert();
 	var progress = new Progress($(".scale-panel"));
-	scale = new Scale(apiAddress, 
-		progress.showProgress, 
-		progress.hideProgress,
-		function(text, noShowAlert) {
+
+	var scale = new Scale({
+		apiAddress: apiAddress,
+		showProgress: progress.showProgress, 
+		hideProgress: progress.hideProgress,
+		endCallback: function(text, noShowAlert) {
 			if (noShowAlert) {
-				scale.close(toggleMove);
+				scale.close(function(){
+					toggleMove(true);
+				});
 			} else {
 				zyAlert.show(text, function() {
-					scale.close(toggleMove);
+					scale.close(function(){
+						toggleMove(true);
+					});
 				});
 			}
-		});
+		},
+		alertCallback: function(text, callback){
+			zyAlert.show(text, callback)
+		},
+	});
 
-	setEvents();
-});
-
-function setEvents() {
 	$("#btnStart").click(function(e) {
-		scale.showScaleList(toggleMove);
+		scale.showScaleList(function(){
+			toggleMove(false);
+		});
 		e.stopPropagation();
 	});
-};
+});
 
+function toggleMove(isMove) {
 
-function toggleMove() {
-	$(".zy-ui-foreground-earth")
-		.toggleClass("move");
+	if (isMove) {
+		$(".zy-ui-foreground-earth")
+			.addClass("move");
 
-	$(".zy-ui-foreground-satellite")
-		.toggleClass("move");
+		$(".zy-ui-foreground-satellite")
+			.addClass("move");
+	} else {
+		$(".zy-ui-foreground-earth")
+			.removeClass("move");
+
+		$(".zy-ui-foreground-satellite")
+			.removeClass("move");
+	}
+	
 };

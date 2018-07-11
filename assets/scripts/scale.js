@@ -1,39 +1,72 @@
-function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
-	this.mask = null;
-	this.panel = null;
+function Scale(_args) {
 
-	this.scaleLstPanel = null;
-	this.scaleLstContainer = null;
-	this.scaleLstPanelClose = null;
+	var args = {
+		apiAddress: null,
+		showProgress: function(text){},
+		hideProgress: function(){},
+		endCallback: function(text, noShowAlert){},
+		alertCallback: function(text, callback){
+		},
+	}
 
-	this.scalePanelPersonal = null;
-	this.scalePanelPersonalExtra = null;
-	this.scalePanelPersonalBack = null;
-	this.scalePanelPersonalGo = null;
+	$.extend(args, _args);
 
-	this.scalePanelGuide = null;
-	this.scalePanelGuideTitle = null;
-	this.scalePanelGuideDescription = null;
-	this.scalePanelGuideBack = null;
-	this.scalePanelGuideGo = null;
+	var module = {
+		mask : null,
+		panel : null,
 
-	this.scalePanelRun = null;
+		scaleLstPanel : null,
+		scaleLstContainer: null,
+		scaleLstPanelClose: null,
 
-	this.apiAddress = apiAddress;
-	this.getScalesUrl = getApi("/ScaleService/scales");
-	this.getPersonalInfoByScaleId = getApi("/ScaleService/personalInfo/");
-	this.getScaleById = getApi("/ScaleService/scale/");
-	this.getResult = getApi("/ScaleService/scale/result/");
+		scalePanelPersonal: null,
+		scalePanelPersonalExtra: null,
+		scalePanelPersonalBack: null,
+		scalePanelPersonalGo: null,
+
+		scalePanelGuide: null,
+		scalePanelGuideTitle: null,
+		scalePanelGuideDescription: null,
+		scalePanelGuideBack: null,
+		scalePanelGuideGo: null,
+
+		scalePanelRun: null,
+	}
+
+	var api = {
+		address: args.apiAddress,
+		getScaleLstUrl: args.apiAddress + "/ScaleService/scales",
+		getPersonalInfoUrl: args.apiAddress + "/ScaleService/personalInfo/",
+		getScaleUrl: args.apiAddress + "/ScaleService/scale/",
+		postResultUrl: args.apiAddress + "/ScaleService/scale/result/",
+	}
 
 	var _ = this;
+
+	// 当前量表id
+	var scaleId;
+
+	// 当前量表题目数量
+	var totalItemCount = 0;
+
+	// 全局跳转对象
+	var globalJumpItems = null;
+
+	// 存放每道题所得分数， 支持全局跳转， 只是前端判断， 并不发给后台
+	// 其长度等于题目个数， 为了防止跳转因素的影响，
+	// 每次都判断开始题目 及 当前题目和结束题目的最小项 之间的所有题目分数，
+	// 为了性能考虑， 使用数组作为数据结构， 使用(题号-1)作为索引，因此要求
+	// 题号从1开始， 并且为连续的正整数 
+	var scoreArrForJump = null; 
 
 	init();
 
 	this.showScaleList = function(callback) {
+
 		preparePage();
-		_.mask.show(500, function(){
-			 _.panel.slideDown(500, function(){
+		module.mask.show(500, function(){
+			 module.panel.slideDown(500, function(){
 
 				if (typeof callback != "undefined"
 					&& callback != null) {
@@ -52,17 +85,17 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		if (typeof enforce == "undefined" 
 			|| enforce == null
 			|| enforce == false) {
-			var loaded = _.scaleLstContainer.data("loaded");
+			var loaded = module.scaleLstContainer.data("loaded");
 			if (loaded != null && loaded == "true") {
-				_.scaleLstPanel.slideDown(300);
+				module.scaleLstPanel.slideDown(300);
 				return;
 			}
 		}
 
-		_showProgress("正在加载量表列表， 请稍等...");
+		args.showProgress("正在加载量表列表， 请稍等...");
 
-		$.get(_.getScalesUrl, function(data, status){
-			    _hideProgress();
+		$.get(api.getScaleLstUrl, function(data, status){
+			    args.hideProgress();
 				if (callback != null) {
 					callback(data);
 				}
@@ -77,12 +110,12 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		$.each(data, function(i, d) {
 			var div = $("<div></div>")
 				.addClass("scale-lst-item")
-				.appendTo(_.scaleLstContainer)
+				.appendTo(module.scaleLstContainer)
 				.click(function(e){
 					hideLstPage(function() {
 						paintDescription(d.id, d.name, d.description);
 
-						_.scalePanelPersonalExtra.empty();
+						module.scalePanelPersonalExtra.empty();
 						loadPersonalInfo(d.id, function(data) {
 							paintPersonal(data);
 							showPersonalPage();
@@ -97,16 +130,16 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 				.attr("title", "题目数量：" + d.questionCount)
 				.appendTo(div);
 
-			_.scaleLstContainer.data("loaded", "true");
+			module.scaleLstContainer.data("loaded", "true");
 		});
 	};
 
 	function loadPersonalInfo(id, callback) {
-		_showProgress("正在加载所需用户信息，请稍等...");
-		var url = _.getPersonalInfoByScaleId + id;
+		args.showProgress("正在加载所需用户信息，请稍等...");
+		var url = api.getPersonalInfoUrl + id;
 		$.get(url, function(data, status) {
 
-			_hideProgress();
+			args.hideProgress();
 			if (callback != null) {
 				callback(data);
 			}
@@ -123,7 +156,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 				var dvItem = $("<div></div>")
 					.addClass("scale-personal-item")
-					.appendTo(_.scalePanelPersonalExtra);
+					.appendTo(module.scalePanelPersonalExtra);
 
 				$("<span></span>")
 					.addClass("scale-personal-item-title")
@@ -163,27 +196,27 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 			function checkEmpty() {
 				if (!hasEmpty(items)
-					&& _.scalePanelPersonalGo.hasClass("disable")) {
-					_.scalePanelPersonalGo.removeClass("disable");
+					&& module.scalePanelPersonalGo.hasClass("disable")) {
+					module.scalePanelPersonalGo.removeClass("disable");
 
 				} else if(hasEmpty(items)
-					&& !_.scalePanelPersonalGo.hasClass("disable")) {
-					_.scalePanelPersonalGo.addClass("disable");
+					&& !module.scalePanelPersonalGo.hasClass("disable")) {
+					module.scalePanelPersonalGo.addClass("disable");
 				}
 			};
 	};
 
 	function paintDescription(id, name, description) {
-		_.scalePanelGuideTitle.text(name);
-		_.scalePanelGuideDescription.text(description);
-		_.scalePanelGuide.data("scale-id", id)
+		module.scalePanelGuideTitle.text(name);
+		module.scalePanelGuideDescription.text(description);
+		module.scalePanelGuide.data("scale-id", id)
 	};
 
 	function loadScale(id, callback) {
-		_showProgress("正在加载指定量表，请稍等...");
-		var url = _.getScaleById + id;
+		args.showProgress("正在加载指定量表，请稍等...");
+		var url = api.getScaleUrl + id;
 		$.get(url, function(data, status){
-			_hideProgress();
+			args.hideProgress();
 			 if (callback != null) {
 			 	callback(data);
 			 }
@@ -195,147 +228,223 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 	};
 
+	function initScale(data) {
+		scaleId = data.id;
+		totalItemCount = data.items.length;
+
+		if (scoreArrForJump != null) {
+			scoreArrForJump = null;
+		}
+
+		globalJumpItems = data.jumpItems;
+		if (typeof globalJumpItems === 'undefined'
+			|| globalJumpItems == null
+			|| globalJumpItems.length == 0) {
+			globalJumpItems = null;
+		}
+
+		if (globalJumpItems != null) {
+			
+			scoreArrForJump = new Array(totalItemCount);
+		}
+		
+	};
+
+	// 由于getSelectedOption中是使用radio的checked状态获取选中的
+	// 组件， 而本方法对于单选题是在radio的click事件中触发， 此时
+	// 该radio还不是checked状态， 因此对于这种情况， 需传入分数
+	function globalJumpHandle(questionId, callback, score) {
+		
+		if (globalJumpItems != null) {
+			if (typeof score === 'undefined') {
+				var data = getSelectedOption(questionId);
+				score = data.score;
+			} 
+			if (scoreArrForJump.length >= questionId) {
+				scoreArrForJump[questionId - 1] = score;
+
+				var isMatch = false;
+				var nextId; 
+				var jumpName; 
+
+				$.each(globalJumpItems, function(i, item) {
+
+					var count = 0;
+					var end = Math.min(item.end, questionId);
+					for (var j = item.begin; j <= end; j++) {
+
+						if (scoreArrForJump[j-1] == item.score) {
+							count++;
+
+							if(count >= item.questionCount) {
+								isMatch = true;
+								nextId = item.jumpNo;
+								jumpName = item.name;
+								break;
+							}
+
+						} else if (typeof scoreArrForJump[j-1] !== 'undefined'  //排除跳转过去的
+							&& item.continuous == 1) {  // 要求连续
+							count = 0;
+						}
+					}
+
+					if (isMatch) {
+						return false;
+					} 
+				});
+
+				// 匹配全局跳转
+				if (isMatch) {
+					var text = jumpName;
+					if (text == "无法回答") {
+						text = "由于您无法回答的题目过多，本次测验终止！";
+					}
+
+					jump(null, nextId, text);
+				} else {
+					callback();
+				}
+
+			} else {
+				console.log("全局跳转出错！")
+			}
+		} else {
+			callback();
+		}
+		
+	};
+
 	function paintScale(data) {
-		var totalItemCount = data.items.length;
-			$.each(data.items, function(i, item) {
 
-				// 1, 单选； 2， 多选； 3， 保留； 4， 描述信息
-				var questionType = item.questionType;
+		$.each(data.items, function(i, item) {
 
-				var dv = $("<div></div>")
-					.addClass("scale-item")
-					.attr("data-item-id", item.id)
-					.attr("data-item-type", questionType)
-					.appendTo(_.scalePanelRun);
+			// 1, 单选； 2， 多选； 3， 保留； 4， 描述信息
+			var questionType = item.questionType;
 
-				if (questionType == 1 || questionType == 2) {
+			var dv = $("<div></div>")
+				.addClass("scale-item")
+				.attr("data-item-id", item.id)
+				.attr("data-item-type", questionType)
+				.appendTo(module.scalePanelRun);
 
-					$("<p></p>")
-					.addClass("scale-item-title")
-					.text("第" + item.id + "题 " + item.title)
+			if (questionType == 1 || questionType == 2) {
+
+				$("<p></p>")
+				.addClass("scale-item-title")
+				.text("第" + item.id + "题 " + item.title)
+				.appendTo(dv);
+
+				var optionPanel = $("<div></div")
+					.addClass("scale-item-option-panel")
 					.appendTo(dv);
 
-					var optionPanel = $("<div></div")
-						.addClass("scale-item-option-panel")
-						.appendTo(dv);
+				$.each(item.items, function(i, option) {
+					var optionBox = $("<div></div>")
+						.addClass("scale-item-option-box")
+						.appendTo(optionPanel)
+						.click(function (){
+							$(this).children(".scale-item-option").click();
+						});
 
-					$.each(item.items, function(i, option) {
-						var optionBox = $("<div></div>")
-							.addClass("scale-item-option-box")
-							.appendTo(optionPanel)
-							.click(function (){
-								$(this).children(".scale-item-option").click();
-							});
+					if (questionType == 1) {
+						var radio = $("<input type='radio' />")
+						.attr("name", item.id)
+						.addClass("scale-item-option")
+						.val(option.optionId)
+						.attr("data-scale-next", option.next)
+						.data("item-score", option.score)
+						.appendTo(optionBox);
 
-						if (questionType == 1) {
-							var radio = $("<input type='radio' />")
+						radio.click(function(e){
+
+							var r = $(this);
+							var nextId = r.data("scale-next");
+							if (nextId == 0) {
+								nextId = dv.data("item-id") + 1;
+							}
+
+							globalJumpHandle(item.id, function(){
+								jump(dv, nextId);
+							}, option.score);	
+
+							e.stopPropagation();
+						});
+					} else if (questionType == 2) {
+						var ck = $("<input type='checkbox' />")
 							.attr("name", item.id)
 							.addClass("scale-item-option")
 							.val(option.optionId)
-							.attr("data-scale-next", option.next)
 							.data("item-score", option.score)
 							.appendTo(optionBox);
+					}								
 
-							radio.click(function(e){
+					$("<span></span>")
+						.addClass("scale-item-option-text")
+						.text(option.optionId + ". " + option.content)
+						.appendTo(optionBox);
+				});
+			} else if (questionType == 4) {
+				$("<pre></pre>")
+					.addClass("scale-panel-guide-description")
+					.text(item.title)
+					.appendTo(dv);
+			}				
 
-								var r = $(this);
-								var nextId = r.data("scale-next");
-								if (nextId == 0) {
-									nextId = dv.data("item-id") + 1;
-								}
+			if (questionType == 2 || questionType == 4) {
+				var tools = $("<div></div>")
+					.addClass("scale-item-tools")
+					.appendTo(dv);
 
-								jump(dv, nextId, totalItemCount);
+				$("<input type='button' value='下一题' />")
+					.addClass("scale-item-tools-btn")
+					.appendTo(tools)
+					.click(function(){
+						var nextId = dv.data("item-id") + 1;
 
-								e.stopPropagation();
-							});
-						} else if (questionType == 2) {
-							var ck = $("<input type='checkbox' />")
-								.attr("name", item.id)
-								.addClass("scale-item-option")
-								.val(option.optionId)
-								.data("item-score", option.score)
-								.appendTo(optionBox);
-						}								
-
-						$("<span></span>")
-							.addClass("scale-item-option-text")
-							.text(option.optionId + ". " + option.content)
-							.appendTo(optionBox);
-					});
-				} else if (questionType == 4) {
-					$("<pre></pre>")
-						.addClass("scale-panel-guide-description")
-						.text(item.title)
-						.appendTo(dv);
-				}				
-
-				if (questionType == 2 || questionType == 4) {
-					var tools = $("<div></div>")
-						.addClass("scale-item-tools")
-						.appendTo(dv);
-
-					$("<input type='button' value='下一题' />")
-						.addClass("scale-item-tools-btn")
-						.appendTo(tools)
-						.click(function(){
-							var nextId = dv.data("item-id") + 1;
-							jump(dv, nextId, totalItemCount);
+						globalJumpHandle(item.id, function(){
+							jump(dv, nextId);
 						});
-				}
-			});
 
-			function jump(dv, nextId, totalItemCount) {
-				if (nextId > totalItemCount) {
-					hideScalePage(function() {
-						showResult(data.id, totalItemCount);
-					})
-				} else {
-					dv.fadeOut(300, function(){
-						 _.scalePanelRun.find(".scale-item")
-						 .filter("[data-item-id=" + nextId + "]")
-						 .show(300);
 					});
-				}
-			};
+			}
+		});
+
 	};
 
-	function showResult(id, totalItemCount) {
+	function jump(dv, nextId, text) {
 
-		var dvItems = $(".scale-item");
+		if (nextId == -10) { // 提前结束
+
+			hideScalePage(function(){
+				args.alertCallback(text, function(){
+					postResult(scaleId);
+				})
+			})
+
+		} else if (nextId > totalItemCount) {
+			hideScalePage(function() {
+				postResult(scaleId);
+			})
+		} else {
+			dv.fadeOut(300, function(){
+				 module.scalePanelRun.find(".scale-item")
+				 .filter("[data-item-id=" + nextId + "]")
+				 .show(300);
+			});
+		}
+	};
+
+	function postResult(id) {
 
 		var data = [];
 		for(var i = 1; i <= totalItemCount; i++) {
 
-			var val = -1;
-			var score = 0;
-
-			var dvItem = dvItems.filter("[data-item-id=" + i + "]");
-			var questionType = dvItem.data("item-type");
-			var option = dvItem 
-					.find(".scale-item-option:checked");
-
-			if (questionType == 1) {
-				if (option.length == 1) {
-					val = option.val();
-					score = option.data("item-score");
-				}
-			} else if (questionType == 2) {
-
-				if (option.length >= 1) {
-					val = "";
-					score = 0;
-
-					$.each(option, function(i, c) {
-						val += $(c).val();
-						score += parseInt($(c).data("item-score"));
-					});
-				}
-			}
+			var optionId = getSelectedOption(i).optionId;
 
 			var optionSelected = {
 				questionId : i,
-				optionId : val,
-				score : score
+				optionId : optionId,
 			};
 
 			data.push(optionSelected);
@@ -370,33 +479,78 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 			info: info
 		};
 
-		_showProgress("正在保存数据，请稍等...")
+		args.showProgress("正在保存数据，请稍等...")
 
 		$.ajax({
 			type: "post",
-			url: _.getResult + id,
+			url: api.postResultUrl + id,
 			data: JSON.stringify(historyData),
 			contentType: "application/json; charset=utf-8",
 			dataType: "text",
 			success: function(data) {
-				_hideProgress();
+				args.hideProgress();
 			
 				if (data == "") {
-					_endCallback("数据保存成功！");
+					args.endCallback("数据保存成功！");
 				} else {
-					_endCallback("数据保存失败！[" + data + "]")
+					args.endCallback("数据保存失败！[" + data + "]")
 				}
 			},
 			error: function(xhr, status, error) {
-				_hideProgress();
+				args.hideProgress();
 				loadError("数据保存失败！ ", xhr, status, error);
 			},
 		});
+
+	};
+
+	function getSelectedOption(questionId) {
+
+		var data = {
+			optionId: -1,
+			score: 0
+		}
+
+		var dvItem = $(".scale-item[data-item-id=" + questionId + "]");
+		var questionType = dvItem.data("item-type");
+		var option = dvItem 
+				.find(".scale-item-option:checked");
+
+		if (questionType == 1) {
+			if (option.length == 1) {
+				var optionId = option.val();
+				var score = option.data("item-score");
+
+				data = {
+					optionId: optionId,
+					score: score
+				}
+
+			}
+		} else if (questionType == 2) {
+
+			if (option.length >= 1) {
+				optionId = "";
+				score = 0;
+
+				$.each(option, function(i, c) {
+					optionId += $(c).val();
+					score += parseInt($(c).data("item-score"));
+				});
+
+				data = {
+					optionId: optionId,
+					score: score
+				}
+			}
+		}
+
+		return data;
 	};
 
 	this.close = function(callback) {
-		_.panel.slideUp(500, function(){
-			_.mask.hide(500, function() {
+		module.panel.slideUp(500, function(){
+			module.mask.hide(500, function() {
 				if (typeof callback != "undefined" 
 					&& callback != null) {
 					callback();
@@ -405,81 +559,61 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		});
 	};
 
-	function _showProgress(text) {
-
-		if (typeof showProgress != "undefined" 
-		&& showProgress != null) {
-			showProgress(text);
-		}
-	};
-
-	function _hideProgress() {
-		if (typeof hideProgress != "undefined"
-			&& hideProgress != null) {
-			hideProgress();
-		}
-	}
-
-	function _endCallback(msg, noShowAlert) {
-		if (endCallback != null) {
-			endCallback(msg, noShowAlert);
-		}
-	}
-
 	function init() {
-		_.mask = $(".scale-mask");
-		_.panel = $(".scale-panel");
+		module.mask = $(".scale-mask");
+		module.panel = $(".scale-panel");
 
-		_.scaleLstPanel = $(".scale-panel-lst");
-		_.scaleLstContainer = $(".scale-lst-container");
-		_.scaleLstPanelClose = $(".scale-panel-lst-close");
+		module.scaleLstPanel = $(".scale-panel-lst");
+		module.scaleLstContainer = $(".scale-lst-container");
+		module.scaleLstPanelClose = $(".scale-panel-lst-close");
 
-		_.scalePanelPersonal = $(".scale-panel-personal");
-		_.scalePanelPersonalExtra = $(".scale-personal-extra");
-		_.scalePanelPersonalBack = $(".scale-btn-personal-back");
-		_.scalePanelPersonalGo = $(".scale-btn-personal-go");
+		module.scalePanelPersonal = $(".scale-panel-personal");
+		module.scalePanelPersonalExtra = $(".scale-personal-extra");
+		module.scalePanelPersonalBack = $(".scale-btn-personal-back");
+		module.scalePanelPersonalGo = $(".scale-btn-personal-go");
 
-		_.scalePanelGuide = $(".scale-panel-guide");
-		_.scalePanelGuideTitle = $(".scale-panel-guide > .scale-panel-title");
-		_.scalePanelGuideDescription = $(".scale-panel-guide-description");
-		_.scalePanelGuideBack = $(".scale-btn-guide-back");
-		_.scalePanelGuideGo = $(".scale-btn-guide-go");
+		module.scalePanelGuide = $(".scale-panel-guide");
+		module.scalePanelGuideTitle = $(".scale-panel-guide > .scale-panel-title");
+		module.scalePanelGuideDescription = $(".scale-panel-guide-description");
+		module.scalePanelGuideBack = $(".scale-btn-guide-back");
+		module.scalePanelGuideGo = $(".scale-btn-guide-go");
 
-		_.scalePanelRun = $(".scale-panel-run");
+		module.scalePanelRun = $(".scale-panel-run");
 
-		_.scalePanelPersonalBack.click(function(){
+		module.scalePanelPersonalBack.click(function(){
 			hidePersonalPage(showLstPage);
 		});
 
-		_.scalePanelPersonalGo.click(function() {
-			if(isEnable(_.scalePanelPersonalGo)) {
+		module.scalePanelPersonalGo.click(function() {
+			if(isEnable(module.scalePanelPersonalGo)) {
 				hidePersonalPage(showDescPage);
 			}
 		});
 
-		_.scalePanelGuideBack.click(function(){
+		module.scalePanelGuideBack.click(function(){
 			hideDescPage(showPersonalPage);
 		});
 
-		_.scalePanelGuideGo.click(function(){
+		module.scalePanelGuideGo.click(function(){
 			hideDescPage(function(){
-				_.scalePanelRun.empty();
-				var id = _.scalePanelGuide.data("scale-id");
+				module.scalePanelRun.empty();
+				var id = module.scalePanelGuide.data("scale-id");
 				loadScale(id, function(data) {
+					initScale(data);
 					paintScale(data);
 					showScalePage();
 				});
 			});			
 		});
 
-		_.scaleLstPanelClose.click(function(){
-			_endCallback(null, true);
+		module.scaleLstPanelClose.click(function(){
+			args.endCallback(null, true);
 		});
 
 	};
 
 	function showLstPage(callback) {
-		_.scaleLstPanel.show(300, function() {
+		module.scaleLstPanel.show(300, function() {
 			if (callback != null) {
 				callback();
 			}
@@ -487,7 +621,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	};
 
 	function hideLstPage(callback) {
-		_.scaleLstPanel.hide(300, function() {
+		module.scaleLstPanel.hide(300, function() {
 			if (callback != null) {
 				callback();
 			}
@@ -495,7 +629,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	};
 
 	function showPersonalPage(callback) {
-		_.scalePanelPersonal.slideDown(500, function() {
+		module.scalePanelPersonal.slideDown(500, function() {
 			if (callback != null) {
 				callback();
 			}
@@ -503,7 +637,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	};
 
 	function hidePersonalPage(callback) {
-		_.scalePanelPersonal.slideUp(500, function() {
+		module.scalePanelPersonal.slideUp(500, function() {
 			if (callback != null) {
 				callback();
 			}
@@ -511,7 +645,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	};
 
 	function showDescPage(callback) {
-		_.scalePanelGuide.slideDown(500, function() {
+		module.scalePanelGuide.slideDown(500, function() {
 			if (callback != null) {
 				callback();
 			}
@@ -519,7 +653,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	};
 
 	function hideDescPage(callback) {
-		_.scalePanelGuide.slideUp(500, function() {
+		module.scalePanelGuide.slideUp(500, function() {
 			if (callback != null) {
 				callback();
 			}
@@ -527,8 +661,8 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	};
 
 	function showScalePage(callback) {
-		_.scalePanelRun.show();
-		_.scalePanelRun.find(".scale-item").filter("[data-item-id=1]")
+		module.scalePanelRun.show();
+		module.scalePanelRun.find(".scale-item").filter("[data-item-id=1]")
 		.show(300, function() {
 				if (callback != null) {
 					callback();
@@ -537,7 +671,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 	};
 
 	function hideScalePage(callback) {
-		_.scalePanelRun.hide(function() {
+		module.scalePanelRun.hide(function() {
 			if (callback != null) {
 				callback();
 			}
@@ -546,12 +680,8 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 
 	function preparePage() {
 		$(".scale-personal-item-input").val("");
-		_.scalePanelPersonalGo.addClass("disable");
-		_hideProgress();
-	};
-
-	function getApi(path) {
-		return apiAddress + path;
+		module.scalePanelPersonalGo.addClass("disable");
+		args.hideProgress();
 	};
 
 	function isEnable(obj) {
@@ -575,7 +705,7 @@ function Scale(apiAddress, showProgress, hideProgress, endCallback) {
 		msg += "[" + xhr.status + "]";
 		msg += "[" + textStatus + "]";
 
-		_endCallback(msg);
+		args.endCallback(msg);
 	};
 
 };
