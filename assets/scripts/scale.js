@@ -47,6 +47,9 @@ function Scale(_args) {
 	// 当前量表id
 	var scaleId;
 
+	// 量表数据
+	var scaleData;
+
 	// 当前量表题目数量
 	var totalItemCount = 0;
 
@@ -59,6 +62,9 @@ function Scale(_args) {
 	// 为了性能考虑， 使用数组作为数据结构， 使用(题号-1)作为索引，因此要求
 	// 题号从1开始， 并且为连续的正整数 
 	var scoreArrForJump = null; 
+
+	// 保存用户选择情况，用于返回给后端
+	var userSelected = null;
 
 	init();
 
@@ -230,6 +236,7 @@ function Scale(_args) {
 
 	function initScale(data) {
 		scaleId = data.id;
+		scaleData = data;
 		totalItemCount = data.items.length;
 
 		if (scoreArrForJump != null) {
@@ -247,13 +254,19 @@ function Scale(_args) {
 			
 			scoreArrForJump = new Array(totalItemCount);
 		}
+
+		if (userSelected != null) {
+			userSelected = null;
+		}
+
+		userSelected = new Array(totalItemCount);
 		
 	};
 
 	// 由于getSelectedOption中是使用radio的checked状态获取选中的
 	// 组件， 而本方法对于单选题是在radio的click事件中触发， 此时
-	// 该radio还不是checked状态， 因此对于这种情况， 需传入分数
-	function globalJumpHandle(questionId, callback, score) {
+	// 该radio还不是checked状态， 因此对于这种情况， 需传入选项及分数
+	function globalJumpHandle(questionId, callback, optionId, score) {
 		
 		if (globalJumpItems != null) {
 			if (typeof score === 'undefined') {
@@ -265,7 +278,6 @@ function Scale(_args) {
 
 				var isMatch = false;
 				var nextId; 
-				var jumpName; 
 
 				$.each(globalJumpItems, function(i, item) {
 
@@ -279,7 +291,6 @@ function Scale(_args) {
 							if(count >= item.questionCount) {
 								isMatch = true;
 								nextId = item.jumpNo;
-								jumpName = item.name;
 								break;
 							}
 
@@ -296,12 +307,7 @@ function Scale(_args) {
 
 				// 匹配全局跳转
 				if (isMatch) {
-					var text = jumpName;
-					if (text == "无法回答") {
-						text = "由于您无法回答的题目过多，本次测验终止！";
-					}
-
-					jump(null, nextId, text);
+					jump(questionId, nextId, optionId);
 				} else {
 					callback();
 				}
@@ -315,143 +321,145 @@ function Scale(_args) {
 		
 	};
 
-	function paintScale(data) {
+	function paintQuestion(id) {
+		module.scalePanelRun.children().remove();
 
-		$.each(data.items, function(i, item) {
+		var item = scaleData.items[id - 1];
 
-			// 1, 单选； 2， 多选； 3， 保留； 4， 描述信息
-			var questionType = item.questionType;
+		// 1, 单选； 2， 多选； 3， 保留； 4， 描述信息
+		var questionType = item.questionType;
 
-			var dv = $("<div></div>")
-				.addClass("scale-item")
-				.attr("data-item-id", item.id)
-				.attr("data-item-type", questionType)
-				.appendTo(module.scalePanelRun);
+		var dv = $("<div></div>")
+			.addClass("scale-item")
+			.attr("data-item-id", item.id)
+			.attr("data-item-type", questionType)
+			.appendTo(module.scalePanelRun);
 
-			if (questionType == 1 || questionType == 2) {
+		if (questionType == 1 || questionType == 2) {
 
-				$("<p></p>")
-				.addClass("scale-item-title")
-				.text("第" + item.id + "题 " + item.title)
+			$("<p></p>")
+			.addClass("scale-item-title")
+			.text("第" + item.id + "题 " + item.title)
+			.appendTo(dv);
+
+			var optionPanel = $("<div></div")
+				.addClass("scale-item-option-panel")
 				.appendTo(dv);
 
-				var optionPanel = $("<div></div")
-					.addClass("scale-item-option-panel")
-					.appendTo(dv);
+			$.each(item.items, function(i, option) {
+				var optionBox = $("<div></div>")
+					.addClass("scale-item-option-box")
+					.appendTo(optionPanel)
+					.click(function (){
+						$(this).children(".scale-item-option").click();
+					});
 
-				$.each(item.items, function(i, option) {
-					var optionBox = $("<div></div>")
-						.addClass("scale-item-option-box")
-						.appendTo(optionPanel)
-						.click(function (){
-							$(this).children(".scale-item-option").click();
-						});
+				if (questionType == 1) {
+					var radio = $("<input type='radio' />")
+					.attr("name", item.id)
+					.addClass("scale-item-option")
+					.val(option.optionId)
+					.attr("data-scale-next", option.next)
+					.data("item-score", option.score)
+					.appendTo(optionBox);
 
-					if (questionType == 1) {
-						var radio = $("<input type='radio' />")
+					radio.click(function(e){
+
+						var r = $(this);
+						var nextId = r.data("scale-next");
+						if (nextId == 0) {
+							nextId = dv.data("item-id") + 1;
+						}
+
+						globalJumpHandle(item.id, function(){
+							jump(item.id, nextId, option.optionId);
+						}, 
+						option.optionId,
+						option.score);	
+
+						e.stopPropagation();
+					});
+				} else if (questionType == 2) {
+					var ck = $("<input type='checkbox' />")
 						.attr("name", item.id)
 						.addClass("scale-item-option")
 						.val(option.optionId)
-						.attr("data-scale-next", option.next)
 						.data("item-score", option.score)
 						.appendTo(optionBox);
+				}								
 
-						radio.click(function(e){
+				$("<span></span>")
+					.addClass("scale-item-option-text")
+					.text(option.optionId + ". " + option.content)
+					.appendTo(optionBox);
+			});
+		} else if (questionType == 4) {
+			$("<pre></pre>")
+				.addClass("scale-panel-guide-description")
+				.text(item.title)
+				.appendTo(dv);
+		}				
 
-							var r = $(this);
-							var nextId = r.data("scale-next");
-							if (nextId == 0) {
-								nextId = dv.data("item-id") + 1;
-							}
+		if (questionType == 2 || questionType == 4) {
+			var tools = $("<div></div>")
+				.addClass("scale-item-tools")
+				.appendTo(dv);
 
-							globalJumpHandle(item.id, function(){
-								jump(dv, nextId);
-							}, option.score);	
+			$("<input type='button' value='下一题' />")
+				.addClass("scale-item-tools-btn")
+				.appendTo(tools)
+				.click(function(){
+					var nextId = dv.data("item-id") + 1;
 
-							e.stopPropagation();
-						});
-					} else if (questionType == 2) {
-						var ck = $("<input type='checkbox' />")
-							.attr("name", item.id)
-							.addClass("scale-item-option")
-							.val(option.optionId)
-							.data("item-score", option.score)
-							.appendTo(optionBox);
-					}								
-
-					$("<span></span>")
-						.addClass("scale-item-option-text")
-						.text(option.optionId + ". " + option.content)
-						.appendTo(optionBox);
-				});
-			} else if (questionType == 4) {
-				$("<pre></pre>")
-					.addClass("scale-panel-guide-description")
-					.text(item.title)
-					.appendTo(dv);
-			}				
-
-			if (questionType == 2 || questionType == 4) {
-				var tools = $("<div></div>")
-					.addClass("scale-item-tools")
-					.appendTo(dv);
-
-				$("<input type='button' value='下一题' />")
-					.addClass("scale-item-tools-btn")
-					.appendTo(tools)
-					.click(function(){
-						var nextId = dv.data("item-id") + 1;
-
-						globalJumpHandle(item.id, function(){
-							jump(dv, nextId);
-						});
-
+					globalJumpHandle(item.id, function(){
+						jump(item.id, nextId);
 					});
-			}
-		});
 
+				});
+		}
+
+		module.scalePanelRun.fadeIn(300);
 	};
 
-	function jump(dv, nextId, text) {
+	// 对于单选题， 由于执行jump方法时， 
+	// click时间可能没有完全完成， 因此通过getSelectedOption方法可能
+	// 获取不到数据， 需要传入optionId
+	function jump(currentId, nextId, optionId) {
 
-		if (nextId == -10) { // 提前结束
+		var optionId = optionId || getSelectedOption(currentId).optionId;
+		userSelected[currentId - 1] = {
+			questionId: currentId,
+			optionId: optionId,
+		};
 
-			hideScalePage(function(){
-				args.alertCallback(text, function(){
-					postResult(scaleId);
-				})
-			})
+		if (nextId == -10 
+			|| nextId > totalItemCount) {
 
-		} else if (nextId > totalItemCount) {
 			hideScalePage(function() {
 				postResult(scaleId);
 			})
 		} else {
-			dv.fadeOut(300, function(){
-				 module.scalePanelRun.find(".scale-item")
-				 .filter("[data-item-id=" + nextId + "]")
-				 .show(300);
+			module.scalePanelRun.fadeOut(300, function(){
+				 paintQuestion(nextId);
 			});
 		}
 	};
 
 	function postResult(id) {
 
-		var data = [];
-		for(var i = 1; i <= totalItemCount; i++) {
-
-			var optionId = getSelectedOption(i).optionId;
-
-			var optionSelected = {
-				questionId : i,
-				optionId : optionId,
-			};
-
-			data.push(optionSelected);
-		}
+		for (var i = 0; i < totalItemCount; i++) {
+			var selected = userSelected[i];
+			if (!selected
+				|| selected == null) {
+				userSelected[i] = {
+					questionId: i + 1,
+					optionId: -1 // 跳转
+				}
+			}
+ 		}
 
 		var selectedData = {
-			items: data
+			items: userSelected
 		};
 
 		var extraInfo = [];
@@ -600,7 +608,8 @@ function Scale(_args) {
 				var id = module.scalePanelGuide.data("scale-id");
 				loadScale(id, function(data) {
 					initScale(data);
-					paintScale(data);
+					paintQuestion(1);
+					//paintScale(data);
 					showScalePage();
 				});
 			});			
