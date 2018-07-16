@@ -335,7 +335,10 @@ function Scale(_args) {
 			.attr("data-item-type", questionType)
 			.appendTo(module.scalePanelRun);
 
-		if (questionType == 1 || questionType == 2) {
+		if (questionType == 1              // 单选
+			|| questionType == 2           // 多选
+			|| questionType == 11) {       // 单选 + 输入框
+
 
 			$("<p></p>")
 			.addClass("scale-item-title")
@@ -346,6 +349,12 @@ function Scale(_args) {
 				.addClass("scale-item-option-panel")
 				.appendTo(dv);
 
+			if (questionType == 11) {
+				var input = $("<textarea></textarea>")
+				.addClass("scale-item-input")
+				.appendTo(optionPanel);
+			}
+			
 			$.each(item.items, function(i, option) {
 				var optionBox = $("<div></div>")
 					.addClass("scale-item-option-box")
@@ -354,7 +363,8 @@ function Scale(_args) {
 						$(this).children(".scale-item-option").click();
 					});
 
-				if (questionType == 1) {
+				if (questionType == 1
+					|| questionType == 11) {              // 单选
 					var radio = $("<input type='radio' />")
 					.attr("name", item.id)
 					.addClass("scale-item-option")
@@ -379,7 +389,7 @@ function Scale(_args) {
 
 						e.stopPropagation();
 					});
-				} else if (questionType == 2) {
+				} else if (questionType == 2) {       // 多选
 					var ck = $("<input type='checkbox' />")
 						.attr("name", item.id)
 						.addClass("scale-item-option")
@@ -393,14 +403,14 @@ function Scale(_args) {
 					.text(option.optionId + ". " + option.content)
 					.appendTo(optionBox);
 			});
-		} else if (questionType == 4) {
+		} else if (questionType == 4) {         // 描述
 			$("<pre></pre>")
 				.addClass("scale-panel-guide-description")
 				.text(item.title)
 				.appendTo(dv);
 		}				
 
-		if (questionType == 2 || questionType == 4) {
+		if (questionType == 2 || questionType == 4) {   // 多选 + 描述
 			var tools = $("<div></div>")
 				.addClass("scale-item-tools")
 				.appendTo(dv);
@@ -425,12 +435,13 @@ function Scale(_args) {
 	// click时间可能没有完全完成， 因此通过getSelectedOption方法可能
 	// 获取不到数据， 需要传入optionId
 	function jump(currentId, nextId, optionId) {
+		var option = getSelectedOption(currentId);
+		if (optionId) {
+			option.optionId = optionId;
+		}
 
-		var optionId = optionId || getSelectedOption(currentId).optionId;
-		userSelected[currentId - 1] = {
-			questionId: currentId,
-			optionId: optionId,
-		};
+		userSelected[currentId - 1] = option;
+		console.log(userSelected[currentId - 1])
 
 		if (nextId == -10 
 			|| nextId > totalItemCount) {
@@ -455,6 +466,8 @@ function Scale(_args) {
 					questionId: i + 1,
 					optionId: -1 // 跳转
 				}
+			} else {
+				delete selected.score; // 不回传分数， 无特别用意
 			}
  		}
 
@@ -515,6 +528,7 @@ function Scale(_args) {
 	function getSelectedOption(questionId) {
 
 		var data = {
+			questionId: questionId,
 			optionId: -1,
 			score: 0
 		}
@@ -524,7 +538,8 @@ function Scale(_args) {
 		var option = dvItem 
 				.find(".scale-item-option:checked");
 
-		if (questionType == 1) {
+		if (questionType == 1
+			|| questionType == 11) {
 			if (option.length == 1) {
 				var optionId = option.val();
 				var score = option.data("item-score");
@@ -533,6 +548,14 @@ function Scale(_args) {
 					optionId: optionId,
 					score: score
 				}
+
+			}
+
+			if (questionType == 11) {
+				var input = dvItem.find(".scale-item-input");
+				console.log("input: " + input.length);
+				var inputText = input.val();
+				data.text = inputText;
 
 			}
 		} else if (questionType == 2) {
