@@ -642,6 +642,16 @@ function Scale(_args) {
 			args.endCallback(null, true);
 		});
 
+		$(".scale-for-search-text").keyup(function(){
+			var text = $(this).val();
+			var items = module.scaleLstContainer.find(".scale-lst-item");
+			items.hide();
+
+			items.find(".scale-lst-item-name:contains('" + text + "')")
+				.parent()
+				.show();
+		});
+
 	};
 
 	function showLstPage(callback) {
