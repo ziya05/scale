@@ -544,10 +544,8 @@ function Scale(_args) {
 				var optionId = option.val();
 				var score = option.data("item-score");
 
-				data = {
-					optionId: optionId,
-					score: score
-				}
+				data.optionId = optionId;
+				data.score = score;
 
 			}
 
@@ -569,10 +567,8 @@ function Scale(_args) {
 					score += parseInt($(c).data("item-score"));
 				});
 
-				data = {
-					optionId: optionId,
-					score: score
-				}
+				data.optionId = optionId;
+				data.score = score;
 			}
 		}
 
